@@ -13,5 +13,7 @@ DeepCopy can be installed using Bioconda
 
 The default usage is: 
 ```bash
-DeepCopy -input <BAM files location> -ref <reference folder location> -output <location to store results>
+DeepCopy -input <BAM file location> -ref <reference folder location> -output <location to store results>
 ```
+
+The default input format is a single BAM file with different read groups for different cells. Future updates will also individual BAM files for each cell. 
