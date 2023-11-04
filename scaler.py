@@ -2580,6 +2580,77 @@ initialUniqueIndex_file = './data/' + folder1 + '/binScale/initialIndex.npz'
 #quit()
 
 
+def saveReformatCSV(outLoc):
+
+    pred1 = loadnpz(outLoc + '/model/pred_now.npz')
+    naive1 = loadnpz(outLoc + '/binScale/initialCNA.npz')
+    goodSubset = loadnpz(outLoc + '/initial/subset.npz')
+    chr1 = loadnpz(outLoc + '/initial/chr_100k.npz')
+    chrAll = loadnpz(outLoc + '/initial/allChr_100k.npz')
+    bins = loadnpz(outLoc + '/binScale/bins.npz')
+    cellNames = loadnpz(outLoc + '/initial/cellNames.npz')
+
+    _, chrStarts = np.unique(chrAll, return_index=True)
+    goodSubset = goodSubset - chrStarts[chr1]
+
+    #print (cellNames)
+    #quit()
+
+    
+
+    #import matplotlib.pyplot as plt
+    #plt.plot(goodSubset)
+    #plt.savefig('./images/temp.png')
+    #quit()
+
+    _, index_start = np.unique(bins, return_index=True)
+    _, index_end = np.unique(bins[-1::-1], return_index=True)
+    index_end = bins.shape[0] - 1 - index_end
+
+    k100 = 100000
+
+    posIndexing = []
+    for a in range(index_start.shape[0]):
+        chrome = chr1[index_start[a]] + 1
+        startPos = (goodSubset[index_start[a]] * k100) + 1
+        endPos = ((goodSubset[index_end[a]] + 1) * k100)
+
+        posIndexing.append([chrome, startPos, endPos])
+        #print (posIndexing[-1]) 
+
+    dataAll = [['Cell barcode', 'Chromsome', 'Start', 'End', 'Haplotype 1', 'Haplotype 2']]
+
+    for a in range(pred1.shape[0]):
+        for b in range(pred1.shape[1]):
+            dataAll.append( [ cellNames[a], posIndexing[b][0], posIndexing[b][1], posIndexing[b][2], int(pred1[a][b][0]), int(pred1[a][b][1])  ] )
+    
+    dataAll = np.array(dataAll)
+    outFile = outLoc + '/finalPrediction/DeepCopyPrediction.csv'
+    np.savetxt(outFile, dataAll, delimiter=",", fmt='%s')
+
+    naiveAll = [['Cell barcode', 'Chromsome', 'Start', 'End', 'Haplotype 1', 'Haplotype 2']]
+    for a in range(naive1.shape[0]):
+        for b in range(naive1.shape[1]):
+            naiveAll.append( [ cellNames[a], posIndexing[b][0], posIndexing[b][1], posIndexing[b][2], int(naive1[a][b][0]), int(naive1[a][b][1])  ] )
+    naiveAll = np.array(naiveAll)
+    naiveFile = outLoc + '/finalPrediction/NaiveCopyPrediction.csv'
+    np.savetxt(naiveFile, naiveAll, delimiter=",", fmt='%s')
+
+
+
+
+
+
+
+
+
+
+
+
+
+outLoc = './data/newTN3'
+saveReformatCSV(outLoc)
+quit()
 
 
 
@@ -2647,3 +2718,5 @@ def scalorRunAll(outLoc):
 
 #outLoc = './data/newTN3'
 #scalorRunAll(outLoc)
+
+
