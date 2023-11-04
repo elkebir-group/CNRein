@@ -7,13 +7,29 @@ DeepCopy is a deep reinforcement learning based evolution-aware algorithm for ha
 
 ## Instalation
 
-DeepCopy can be installed using Bioconda
+DeepCopy is currently being converted to a Bioconda package to allow for automatic installation including all requirement packages. 
+
+Manual installation is currently available and can be achieved by cloning this GitHub repository and installing the below requirements all available on conda:
+- Python 3
+- numpy
+- pandas
+- samtools
+- bcftools
+- pysam
+- statsmodels
+- pytorch
+- shapeit4
 
 ## Usage
 
-The default usage is: 
+If installed manually, the default usage is 
 ```bash
-DeepCopy -input <BAM file location> -ref <reference folder location> -output <location to store results>
+python pipeline.py -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
+```
+If installed via Bioconda, the default usage is: 
+```bash
+DeepCopy -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
 ```
 
 The default input format is a single BAM file with different read groups for different cells. Future updates will also individual BAM files for each cell. 
+The default reference files will be made available for download. 
