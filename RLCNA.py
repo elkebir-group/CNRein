@@ -2968,5 +2968,45 @@ def simplePredict(RDR_file, BAF_file, chr_file, initialCNA_file, initialUniqueCN
 
 
 
+
+
+
+
+
+def easyRunRL(outLoc):
+
+
+    RDR_file = outLoc + '/binScale/filtered_RDR_avg.npz'
+
+    #RDR_file = './data/' + folder1 + '/binScale/RDR_adjusted.npz'
+
+    HAP_file = outLoc + '/binScale/filtered_HAP_avg.npz'
+    chr_file = outLoc + '/binScale/chr_avg.npz'
+
+
+    noise_file = outLoc + '/binScale/filtered_RDR_noise.npz'
+    BAF_noise_file = outLoc + '/binScale/BAF_noise.npz'
+    region_file = outLoc + '/binScale/regions.npz'
+    BAF_file = ''
+
+    initialCNA_file = outLoc + '/binScale/initialCNA.npz'
+    initialUniqueCNA_file = outLoc + '/binScale/initialUniqueCNA.npz'
+    originalError_file = outLoc + '/originalError.npz' #2
+
+    modelName =  outLoc + '/model/model_now.pt'
+    predict_file = outLoc + '/model/pred_now.npz'
+    Ncall = 20
+    withAdjust = True
+
+    #balance = 5.0
+    #balance = 2.0
+    balance = 1.0
+
+    simpleTrain(RDR_file, HAP_file, chr_file, initialCNA_file, initialUniqueCNA_file, originalError_file, modelName, predict_file, Ncall, noise_file, BAF_noise_file, balance, withAdjust)
+
+
+#trainModel()
+#quit()
+
 #Idea: Maybe don't allow amplification from 1 to 2 (for example) if the level of all bins is 3 in the region.
 #If it under-amplifies for all bins, it may be a stupid sample.
