@@ -7,6 +7,7 @@ import numpy as np
 from run import runAllSteps
 from process import runProcessFull
 from scaler import scalorRunAll
+from scaler import saveReformatCSV
 from RLCNA import easyRunRL
 
 
@@ -26,6 +27,7 @@ def runEverything(bamLoc, refLoc, outLoc, refGenome):
     runProcessFull(outLoc, refLoc, refGenome)
     scalorRunAll(outLoc)
     easyRunRL(outLoc)
+    saveReformatCSV(outLoc)
 
 
 
