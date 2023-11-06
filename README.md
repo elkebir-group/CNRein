@@ -37,5 +37,5 @@ DeepCopy -input <BAM file location> -ref <reference folder location> -output <lo
 ```
 
 The default input format is a single BAM file with different read groups for different cells. Future updates will also individual BAM files for each cell. 
-The default reference files are currently being made publically available Zenodo. 
+The default reference files are publically available at https://zenodo.org/records/10076403. 
 The final output in the form of an easily interpretable CSV file is produced in the folder "finalPrediction" within the user provided "-output" folder. 
