@@ -19,6 +19,7 @@ Manual installation is currently available and can be achieved by cloning this G
 - statsmodels
 - pytorch
 - shapeit4
+- 
 Note, pip can be used as an alternative to conda for any of these packages available via pip. 
 
 ## Usage
