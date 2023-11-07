@@ -2648,9 +2648,9 @@ def saveReformatCSV(outLoc):
 
 
 
-outLoc = './data/newTN3'
-saveReformatCSV(outLoc)
-quit()
+#outLoc = './data/newTN3'
+#saveReformatCSV(outLoc)
+#quit()
 
 
 
