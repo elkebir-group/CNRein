@@ -7,6 +7,9 @@ DeepCopy is a deep reinforcement learning based evolution-aware algorithm for ha
 
 ## Instalation
 
+### Manual
+
+
 DeepCopy is currently being converted to a Bioconda package to allow for automatic installation including all requirement packages. 
 
 Manual installation is currently available and can be achieved by cloning this GitHub repository and installing the below requirements all available on conda:
@@ -22,7 +25,20 @@ Manual installation is currently available and can be achieved by cloning this G
 
 Note, pip can be used as an alternative to conda for any of these packages available via pip. 
 
+### Pip installation
+
+Run the below command to install DeepCopy
+```bash
+pip install DeepSomaticCopy
+```
+This automatically installs numpy, pandas, pysam, statsmodels, and pytorch. However, samtools, bcftools and shapeit4 still need to be installed (all of these are available via bioconda). 
+
+
+
+
 ## Usage
+
+### With manual installation
 
 If installed manually, the default usage is 
 ```bash
@@ -33,10 +49,19 @@ An example usage could be as below
 python pipeline.py -input ./data/TN3_FullMerge.bam -ref ./data/refNew -output ./data/newTN3 -refGenome hg38
 ```
 
-If installed via Bioconda, the default usage is: 
+### With pip installation
+
+DeepCopy can be ran with the following command:
 ```bash
-DeepCopy -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
+python3 -c 'from DeepSomaticCopy import pipeline; pipeline.runEverything(<BAM file location>, <reference folder location>, <location to store results>, <either "hg19" or "hg38">)'
 ```
+An example command could be:
+```bash
+python3 -c 'from DeepSomaticCopy import pipeline; pipeline.runEverything("./data/TN3_FullMerge.bam", "./data/refNew", "./data/newTN3", "hg38")'
+```
+
+
+## Input requirements
 
 The default input format is a single BAM file with different read groups for different cells. 
 Future updates will also allow individual BAM files for each cell. 
