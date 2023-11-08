@@ -9,9 +9,6 @@ DeepCopy is a deep reinforcement learning based evolution-aware algorithm for ha
 
 ### Manual
 
-
-DeepCopy is currently being converted to a Bioconda package to allow for automatic installation including all requirement packages. 
-
 Manual installation is currently available and can be achieved by cloning this GitHub repository and installing the below requirements all available on conda:
 - Python 3
 - numpy
