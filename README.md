@@ -50,11 +50,11 @@ python script.py -input ./data/TN3_FullMerge.bam -ref ./data/refNew -output ./da
 
 DeepCopy can be ran with the following command:
 ```bash
-python3 -c 'from DeepSomaticCopy import pipeline; pipeline.runEverything(<BAM file location>, <reference folder location>, <location to store results>, <either "hg19" or "hg38">)'
+DeepCopyRun -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
 ```
 An example command could be:
 ```bash
-python3 -c 'from DeepSomaticCopy import pipeline; pipeline.runEverything("./data/TN3_FullMerge.bam", "./data/refNew", "./data/newTN3", "hg38")'
+DeepCopyRun -input ./data/TN3_FullMerge.bam -ref ./data/refNew -output ./data/newTN3 -refGenome hg38
 ```
 
 
