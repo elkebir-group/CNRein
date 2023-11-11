@@ -57,6 +57,21 @@ An example command could be:
 DeepCopyRun -input ./data/TN3_FullMerge.bam -ref ./data/refNew -output ./data/newTN3 -refGenome hg38
 ```
 
+Additionally, one can run only parts of the DeepCopy pipeline with the following command:
+```bash
+DeepCopyRun -step <name of step to be ran> -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
+```
+Here "<name of step to be ran>" can be "processing" for data processing steps, "NaiveCopy" for additional NaiveCopy steps or "DeepCopy" for the final deep reinforcement learning step. 
+The steps "NaiveCopy" and "DeepCopy" only require the "-output" argument, and not "-ref", "refGenome", or "-input" (it is assumed that the correct data for these steps is already in the "-output" folder). 
+In the "examples" folder, we provide the input to the "NaiveCopy" and "DeepCopy" steps for three datasets from our paper. 
+For S0, we provide input files to "DeepCopy" but not "NaiveCopy" due to GitHub's file size constraints (since S0 contains more cells, the files are larger). 
+This allows for the below command to be ran without having to download any additional data.
+```bash
+DeepCopyRun -step NaiveCopy -output ./examples/TN3
+DeepCopyRun -step DeepCopy -output ./examples/TN3
+```
+The equivalent command can also be ran with "./examples/TN1", "./examples/Ovarian", and for the DeepCopy step "./examples/S0". 
+
 
 ## Input requirements
 
