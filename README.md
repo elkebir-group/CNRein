@@ -61,7 +61,9 @@ Additionally, one can run only parts of the DeepCopy pipeline with the following
 ```bash
 DeepCopyRun -step <name of step to be ran> -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
 ```
-Here "name of step to be ran" can be "processing" for data processing steps, "NaiveCopy" for additional NaiveCopy steps or "DeepCopy" for the final deep reinforcement learning step. 
+Here "name of step to be ran" can be any of the three sequential steps: "processing" for data processing steps, "NaiveCopy" for additional NaiveCopy steps or "DeepCopy" for the final deep reinforcement learning step. 
+The "NaiveCopy" and "DeepCopy" steps do not require bcftools, samtools or SHAPE-IT. 
+Instead, they only require python package dependencies that are automatically installed when installing DeepCopy through pip. 
 The steps "NaiveCopy" and "DeepCopy" only require the "-output" argument, and not "-ref", "refGenome", or "-input" (it is assumed that the correct data for these steps is already in the "-output" folder). 
 In the "examples" folder, we provide the input to the "NaiveCopy" and "DeepCopy" steps for three datasets from our paper. 
 For S0, we provide input files to "DeepCopy" but not "NaiveCopy" due to GitHub's file size constraints (since S0 contains more cells, the files are larger). 
