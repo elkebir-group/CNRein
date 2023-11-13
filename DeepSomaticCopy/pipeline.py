@@ -1,59 +1,13 @@
-#CNA.py
-
-#import time
 import sys
 import numpy as np
-#import importlib
-#import os
 
-#location1 = os.path.abspath(__file__)
-#location1 = '/'.join(location1.split('/')[:-1])
-#print (location1)
-#quit()
-
-#process = importlib.import_module(location1 + '/process')
-#runBAM = importlib.import_module(location1 + '/runBAM')
-#scaler = importlib.import_module(location1 + '/scaler')
-#RLCNA = importlib.import_module(location1 + '/RLCNA')
-
-
-#process = importlib.import_module('process', './')
-#process = importlib.import_module('process', location1)
-#runBAM = importlib.import_module('runBAM', location1)
-#scaler = importlib.import_module('scaler', location1)
-#RLCNA = importlib.import_module('RLCNA', location1)
-
-
-#import DeepCopy1_stefanivanovic99.process #import process
-
-
-#from DeepCopy1_stefanivanovic99.process import runProcessFull #Seems self referential but I guess this is how it's supposed to be done
-#from DeepCopy1_stefanivanovic99.runBAM import runAllSteps
-#from DeepCopy1_stefanivanovic99.scaler import scalorRunAll
-#from DeepCopy1_stefanivanovic99.scaler import saveReformatCSV
-#from DeepCopy1_stefanivanovic99.RLCNA import easyRunRL
-
-#from RLCNA.RLCNA import easyRunRL
-
-#print (__name__)
-
-#from . import process
 from .process import runProcessFull
 from .runBAM import runAllSteps
 from .scaler import scalorRunAll
 from .scaler import saveReformatCSV
+from .scaler import scalorRunBins
+from .scaler import runNaiveCopy
 from .RLCNA import easyRunRL
-
-
-
-#print ('hi')
-#quit()
-
-#from runBAM import runAllSteps
-#from scaler import scalorRunAll
-#from scaler import saveReformatCSV
-#from RLCNA import easyRunRL
-
 
 
 
@@ -69,46 +23,97 @@ def getValuesSYS(listIn, keyList):
 
 def runEverything(bamLoc, refLoc, outLoc, refGenome):
 
-    #print (bamLoc, refLoc, outLoc, refGenome, location1)
-    #quit()
-
-    #command1 = location1 + '/runBAM.py ' + ' ' + bamLoc + ' ' + refLoc  + ' ' +  outLoc  + ' ' +  refGenome
-    #os.system(command1)
-    #print (command1)
-    #quit()
     runAllSteps(bamLoc, refLoc, outLoc, refGenome)
     runProcessFull(outLoc, refLoc, refGenome)
     scalorRunAll(outLoc)
     easyRunRL(outLoc)
-    saveReformatCSV(outLoc)
+    saveReformatCSV(outLoc, isNaive=False)
+
+def scriptRunEverything():
+    import sys
+    listIn = np.array(sys.argv)
+
+    if (('-h' in listIn) or ('-help' in listIn)) or ('--help' in listIn):
+
+        print ("Usage instructions:")
+        print ('')
+        print ('Help information :')
+        print ('"DeepCopyRun -h" or "DeepCopyRun -help" or "DeepCopyRun --help" ')
+        print ('')
+        print ('Running pipeline:')
+        print ('DeepCopyRun -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38"> ' )
+        print ('')
+        print ('Running part of pipeline: ')
+        print ('DeepCopyRun -step <name of step to be ran> -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38"> ' )
+
+
+    elif not '-step' in listIn:
+
+        keyList = ['-input', '-ref', '-output', '-refGenome']
+        
+        values1 = getValuesSYS(listIn, keyList)
+        bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
+        runEverything(bamLoc, refLoc, outLoc, refGenome)
+
+    else:
+
+        stepVal = getValuesSYS(listIn, ['-step'])
+        stepVal = stepVal[0]
+
+        
+
+        if stepVal == 'processing':
+            keyList = ['-input', '-ref', '-output', '-refGenome']
+            values1 = getValuesSYS(listIn, keyList)
+            bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
+
+            runAllSteps(bamLoc, refLoc, outLoc, refGenome)
+            runProcessFull(outLoc, refLoc, refGenome)
+            scalorRunBins(outLoc)
+        
+        if stepVal == 'NaiveCopy':
+            values1 = getValuesSYS(listIn, ['-output'])
+            outLoc = values1[0]
+            runNaiveCopy(outLoc)
+
+        if stepVal == 'DeepCopy':
+            values1 = getValuesSYS(listIn, ['-output'])
+            outLoc = values1[0]
+            easyRunRL(outLoc)
+            saveReformatCSV(outLoc, isNaive=False)
+        
+
+        if stepVal == 'processBams':
+            keyList = ['-input', '-ref', '-output', '-refGenome']
+            values1 = getValuesSYS(listIn, keyList)
+            bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
+            runAllSteps(bamLoc, refLoc, outLoc, refGenome)
+        
+        if stepVal == 'variableBins':
+            keyList = ['-ref', '-output', '-refGenome']
+            values1 = getValuesSYS(listIn, keyList)
+            refLoc, outLoc, refGenome = values1[0], values1[1], values1[2]
+
+            runProcessFull(outLoc, refLoc, refGenome)
+            scalorRunBins(outLoc)
+
+
+
+
 
 
 def printCheck(bamLoc, refLoc, outLoc, refGenome):
-
     print ("Basic Print Check")
     print ('bamLoc', bamLoc, 'refLoc', refLoc, 'outLoc', outLoc, 'refGenome', refGenome)
 
+def scriptCheck():
+    import sys
+    print (sys.argv)
 
 
-#bamLoc = './data/TN3_FullMerge.bam'
-#refLoc = './data/refNew'
-#outLoc = './data/newTN3'
-#refGenome = 'hg38'
+def respondCheck():
+    print ('check success')
 
-
-#runAllSteps
-#quit()
-
-#print ('hi')
-
-if False:
-    if __name__ == "__main__":
-        keyList = ['-input', '-ref', '-output', '-refGenome']
-        listIn = np.array(sys.argv)
-        values1 = getValuesSYS(listIn, keyList)
-        bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
-
-        runEverything(bamLoc, refLoc, outLoc, refGenome)
 
 
 

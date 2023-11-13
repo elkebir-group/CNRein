@@ -3,7 +3,7 @@
 import numpy as np
 
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 import scipy
 from scipy import stats
@@ -17,16 +17,22 @@ import torch.nn.functional as F
 from torch.autograd import grad
 from torch.optim import Optimizer
 
-from .scaler import tweakBAF
 
 
+from tqdm import tqdm
 #np.random.seed(0)
 #torch.manual_seed(1)
 
 
-
-
 import sys
+
+
+if __name__ == "__main__":
+    from shared import *
+else:
+    from .shared import *
+
+
 def sizeof_fmt(num, suffix='B'):
     ''' by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified'''
     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
@@ -1084,7 +1090,7 @@ def findCurrentX(currentCNA_mini, Ncall, withBAF):
 
 
 
-def modelCNAgenerator(CNAfull, chr, start1, end1, model, Ncall, info, returnReg=False, doDouble=False):
+def modelCNAgenerator(CNAfull, chr, start1, end1, model, Ncall, info, returnReg=False, doDouble=False, verbose=False):
 
 
     
@@ -1178,8 +1184,9 @@ def modelCNAgenerator(CNAfull, chr, start1, end1, model, Ncall, info, returnReg=
 
         argRun = np.argwhere(doneBool == 0)[:, 0]
 
-        if step % 50 == 0:
-            print (argRun.shape)
+        if verbose:
+            if step % 50 == 0:
+                print (argRun.shape)
 
         if False:#step == maxN - 1:
 
@@ -1196,24 +1203,19 @@ def modelCNAgenerator(CNAfull, chr, start1, end1, model, Ncall, info, returnReg=
 
         if (argRun.shape[0] > 0):
 
-            #print ('argRun', argRun.shape)
-            #quit()
+            
 
             continueBool = findPossibleContinue(CNAfull[argRun], currentCNA[argRun], boolDoubleLeft[argRun], Ncall, includeWGD, withBAF)
 
-            #if includeWGD:
-            #    argDoubleLeft = boolDoubleLeft[argRun]
-            #    argDoubleLeft = np.argwhere(argDoubleLeft == 1)[:, 0]
-            #    continueBool[argDoubleLeft, 2] = 1
-
+            
 
             doneBool[argRun] = np.copy(continueBool[:, 0])
 
 
-            #argContinue = np.argwhere(doneBool[argRun] == 0)[:, 0]
+            
 
             startBool = startBoolAll[argRun]
-            #continueBool = continueBoolAll[argRun]
+            
 
 
 
@@ -1351,8 +1353,8 @@ def modelCNAgenerator(CNAfull, chr, start1, end1, model, Ncall, info, returnReg=
                     endSum = np.sum( endBool.data.numpy() , axis=1 )
 
                     print ('issue')
-                    plt.plot(endSum)
-                    plt.show()
+                    #plt.plot(endSum)
+                    #plt.show()
 
                     print (endBool.shape)
                     quit()
@@ -1787,78 +1789,19 @@ def subset_calculateError(pred_RDR, pred_BAF, RDR, HAP, chr, boolSubset, noiseRD
 
 
 
-        #RDR_error2 = torch.sum(  func1((pred_RDR1 - RDR_int[subset1]) )  , axis=1).data.numpy()
-        #argMin1 = np.argwhere(RDR_error2 == np.min(RDR_error2) )[0, 0]
-        #diff1 = pred_RDR[a].data.numpy() - RDR[argMin1]
-        #noise1 = noiseInverse[argMin1].data.numpy()
-        #125 bad
-
-        #print (noise1[125])
         
-        #plt.plot(diff1 * noise1)
-        #plt.show()
-
-
-        #print (RDR_error.shape)
-        #plt.plot(pred_RDR[a].data.numpy())
-        #plt.plot(RDR[argMin1])
-        #plt.show()
-        #quit()
-
-        #print (torch.min(torch.abs(noiseInverse[subset1])))
-
-        #print (torch.min(torch.abs((pred_RDR1))))
-
-        #print (torch.min(torch.abs((RDR_int[subset1]))))
-
-        #print (torch.min(torch.abs((pred_RDR1 - RDR_int[subset1]))))
-
-        #print (torch.min(torch.abs((pred_RDR1 - RDR_int[subset1]) * noiseInverse[subset1])))
-
-
-        #print (torch.min(RDR_error))
-
-        #print (pred_RDR1.shape)
-        #print (RDR_int[subset1].shape)
-        #print (noiseInverse[subset1].shape)
-        #print (RDR_error[:10])
-        #quit()
 
 
         if type(HAP) != type(''):
             
-            #BAF_error = ( torch.log(pred_BAF1) * HAP[subset1, :, 1]  ) + ( torch.log(1 - pred_BAF1) * HAP[subset1, :, 0]  )
-            #optimalBAF = (HAP[subset1, :, 1]) / ( torch.sum(HAP[subset1], axis=2) + 1e-5 )
-            #optimalBAF = (optimalBAF * 0.98) + 0.01
-            #minimalError = ( torch.log(optimalBAF) * HAP[subset1, :, 1]  ) + ( torch.log(1 - optimalBAF) * HAP[subset1, :, 0]  )
-            #BAF_error = minimalError - BAF_error
-            #BAF_error = torch.sum(BAF_error, axis=1)
+            
             
             BAF_int = HAP[subset1, :, 1].float() / (torch.sum(HAP[subset1], axis=2).float() + 1e-5)
 
             BAF_error = torch.sum(  func1((pred_BAF1 - BAF_int) * noiseBAFInverse[subset1])  , axis=1) + 1e-5
             
 
-            #print ( type(BAF_error))
-
-            #print (BAF_error.shape)
-
-            #BAF_error = BAF_error * -1
-
-            
-            #print (BAF_error.shape)
-            #BAF_error = torch.sum(  (pred_BAF1 - BAF_int[subset1]) ** 2, axis=1) + 1e-5#1 #+1 to avoid 0
-            #BAF_error = torch.sum(  func1(pred_BAF1 - BAF_int[subset1]) , axis=1) + 1e-5#1 #+1 to avoid 0
-            #BAF_error = BAF_error.float() / float(RDR.shape[1])
-            #if not withAdjust:
-            #    BAF_error = BAF_error # / float(100**2)
-
-        #print ('b')
-        #ar1 = ((pred_RDR1 - RDR_int[subset1]) * noiseInverse[subset1])
-        #print (torch.min( ar1  ** 2 ))
-        #print (torch.min(RDR_error))
-        #print (torch.max(RDR_error))
-
+        
 
         RDR_error = RDR_error.float() #/ float(RDR.shape[1])
         #if not withAdjust:
@@ -1924,7 +1867,7 @@ def calculateError(CNAprofiles, RDR, BAF, chr, noiseRDR, model, withAdjust):
 
 
 
-def efficiencyCalculateError(predRDR, predBAF, savedCNA_mapper, RDR, HAP, stepLast, modelProbSum, sampleProbSum, errorNow, chr, noiseRDR, noiseBAF, balance, withAdjust, giveError=False, doScales=False, scalesBool=False):
+def efficiencyCalculateError(predRDR, predBAF, savedCNA_mapper, RDR, HAP, stepLast, modelProbSum, sampleProbSum, errorNow, chr, noiseRDR, noiseBAF, balance, withAdjust, giveError=False, doScales=False, scalesBool=False, verbose=False):
 
 
     def getCellWeight(div2, errorMatrix):
@@ -2137,8 +2080,8 @@ def efficiencyCalculateError(predRDR, predBAF, savedCNA_mapper, RDR, HAP, stepLa
         argCheck = argCheck[stepNow[argCheck] >= 0]
 
 
-
-        print ('argCheck', argCheck.shape, np.sum(boolSubset))
+        if verbose:
+            print ('argCheck', argCheck.shape, np.sum(boolSubset))
 
         if argCheck.shape[0] > 0:
 
@@ -2317,18 +2260,12 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
 
 
 
+    #The verbose option is used during development.
+    #It provides usefull information to those modifying the DeepCopy RL algorithm.
+    #However, this inofmraiton is not useful for orderinary users of DeepCopy. 
+    verbose = False
 
-
-
-
-    #initialUniqueIndex_file = './data/inputResults/S' + '1' + '_initialIndex.npz'
-    #uniqueIndex = loadnpz(initialUniqueIndex_file)
-
-
-
-
-
-
+    
     _, start1 = np.unique(chr, return_index=True)
     end1 = np.concatenate((start1[1:], np.zeros(1) + chr.shape[0])).astype(int)
 
@@ -2336,52 +2273,23 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
     if type(HAP) == type(''):
         withBAF = False
 
-    
-    #    BAF = np.min(np.array([BAF, 1 - BAF]), axis=0)
-
-
-    #Ncall = 10
     CNAfull[CNAfull >= Ncall] = Ncall - 1
 
     CNAfull_now = np.copy(CNAfull)
 
-    #Nrep = 50
-    #Nrep = 100
-    #Nrep = 200
+    
     Nrep = 500
-    #Nrep = 1000
 
-    #CNAcodeSize = np.sum(  (end1-start1)**2 )
-
+    
     Nbin = CNAfull.shape[1]
 
     model = CancerModel(Nbin, Nrep, Ncall, withBAF)
-    #model = torch.load('./data/ACT10x/model_1.pt')
-
-
-    #model = torch.load(modelName)
-
-
-    #errorFull = np.zeros((100000, x.shape[0]))
-    #errorDict = {}
-
-
-
     
 
+    #This learning rate tends to work best in practice, but 1e-3 is also acceptable. 
     learningRate = 3e-3 
-
-    
-
-    #learningRate = 1e-3
-
-    #learningRate = 1e-4
     optimizer = torch.optim.Adam(model.parameters(), lr = learningRate, betas=(0.9, 0.99))
-    #optimizer = torch.optim.Adam(model.parameters(), lr = learningRate, betas=(0.8, 0.99))
-    #optimizer = torch.optim.RMSprop(model.parameters(), lr = learningRate, alpha=(0.9))
-
-    #optimizer = torch.optim.SGD(model.parameters(), lr = learningRate) #TODO REMOVE!!! Trying for memory issue! 
-
+    
 
 
     converged = False
@@ -2395,13 +2303,11 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
     cellProbList = []
 
 
-    #Niter = 1000000
     Niter = 1
 
     continue1 = True
-    iter = -1
+    #iter = -1
 
-    #doScales = True
     doScales = False
 
 
@@ -2411,35 +2317,40 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
     counterAll = np.zeros(CNAfull.shape[0])
 
 
-    while continue1:
-        iter += 1
+    #while continue1:
+    #    iter += 1
 
-        #gapLearn = 2 #Default 2
-        gapLearn = 2 #Default 2
-        gapTime = 10#5 #Default 5
+    for iter in tqdm(range(200)):
 
-        if len(cellProbList) > gapTime:
-            cellProb_array = np.array(cellProbList)
-            cellProb_max1 = np.max(cellProb_array[:-gapTime])
-            cellProb_max2 = np.max(cellProb_array[-gapTime:])
-            print ("maxs", cellProb_max1, cellProb_max2)
-            print (cellProb_max1 + gapLearn, cellProb_max2)
-            #if cellProb_max2 < cellProb_max1 + gapLearn:
-            #    print ('stopping')
-            #    continue1 = False
+        #Optional stopping criteria
+        if False:
+            gapLearn = 2
+            gapTime = 10
 
-        if stopIter:
-            #if iter == 100:
-            if iter == 200:
-                continue1 = False
+            if len(cellProbList) > gapTime:
+                cellProb_array = np.array(cellProbList)
+                cellProb_max1 = np.max(cellProb_array[:-gapTime])
+                cellProb_max2 = np.max(cellProb_array[-gapTime:])
+                if verbose:
+                    print ("maxs", cellProb_max1, cellProb_max2)
+                    print (cellProb_max1 + gapLearn, cellProb_max2)
+                #Commented out optional stopping criteria 
+                #if cellProb_max2 < cellProb_max1 + gapLearn:
+                #    print ('stopping')
+                #    continue1 = False
+
+        #if stopIter:
+        #    if iter == 200:
+        #        continue1 = False
 
 
         if continue1:
-            print (iter)
+            if verbose:
+                print ('iteration ' + str(iter) + " out of " + str(200) )
             info = [iter]
 
 
-            modelProbSum, sampleProbSum, treeLoss, argValid, savedCNA_mapper, savedCNA, stepLast = modelCNAgenerator(CNAfull_now, chr, start1, end1, model, Ncall, info, returnReg=True, doDouble=True)
+            modelProbSum, sampleProbSum, treeLoss, argValid, savedCNA_mapper, savedCNA, stepLast = modelCNAgenerator(CNAfull_now, chr, start1, end1, model, Ncall, info, returnReg=True, doDouble=True, verbose=verbose)
 
             
             
@@ -2449,40 +2360,21 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
 
             time1 = time.time()
 
-            #print ('min', np.min(CNAfull))
-
-            #plt.hist(stepLast, bins=100)
-            #plt.show()
-
-
 
             modelProbSum_np = modelProbSum.data.numpy()
 
             assert np.max(modelProbSum_np) <= 0.01
             assert np.max(modelProbSum_np - sampleProbSum) <= 0.01
 
-
-
-            #print ('savedCNA')
-            #if np.isnan(savedCNA).any():
-            #    print ("is nan error0")
-            #    quit()
-
-            print ('doing measurementCalculator')
-
+            
             predRDR, predBAF = measurementCalculator(savedCNA, model, withBAF)
 
 
-            print ('doing efficiencyCalculateError')
             
-
-            #balance = 10.0
-            #balance = 5.0
-            #balance = 1.0
-            weight1, cellProb, weightFull0, errorMatrix, multPaste, multPos = efficiencyCalculateError(predRDR, predBAF, savedCNA_mapper, RDR, HAP, stepLast, modelProbSum_np, sampleProbSum, originalError, chr, noiseRDR, noiseBAF, balance, withAdjust)
+            weight1, cellProb, weightFull0, errorMatrix, multPaste, multPos = efficiencyCalculateError(predRDR, predBAF, savedCNA_mapper, RDR, HAP, stepLast, modelProbSum_np, sampleProbSum, originalError, chr, noiseRDR, noiseBAF, balance, withAdjust, verbose=verbose)
 
 
-            bestFit = np.argmax(multPaste, axis=0) #for later use
+            bestFit = np.argmax(multPaste, axis=0) 
 
             
             del predRDR 
@@ -2491,23 +2383,9 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
             del errorMatrix
             del multPaste
 
-
-            #for name, size in sorted(((name, sys.getsizeof(value)) for name, value in list(
-            #                        locals().items())), key= lambda x: -x[1])[:10]:
-            #    print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
-
-            #for name, size in sorted(((name, sys.getsizeof(value)) for name, value in list(
-            #                        locals().items())), key= lambda x: -x[1])[:10]:
-            #    print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
             
-            #plt.imshow(weight1)
-            #plt.show()
-            #quit()
 
-            #print (np.sum(weight1))
-            #quit()
-
-            if True: #iter > iterPass:
+            if True: 
                 argWeight = np.argwhere(weight1 > (0.5 / RDR.shape[0]))
                 CNAfull_best = savedCNA[savedCNA_mapper[argWeight[:, 0], argWeight[:, 1]]]
 
@@ -2534,12 +2412,7 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
                 inverse_temp = uniqueValMaker( CNAfull_temp.reshape((CNAfull_temp.shape[0],  CNAfull_temp.shape[1]*CNAfull_temp.shape[2] )) )
                 _, index_temp = np.unique(inverse_temp, return_index=True)
 
-                print ("A")
-                print (np.argwhere(index_temp >=  CNAfull.shape[0] ).shape)
-                print (np.argwhere(index_temp <  CNAfull.shape[0] ).shape)
-
-                #quit()
-                #CNAfull_now = np.concatenate((CNAfull, CNAfull_best), axis=0)
+                
                 CNAfull_now = np.concatenate((CNAfull, CNAfull_best, CNA_randoms), axis=0)
 
                 inverse1 = uniqueValMaker( CNAfull_now.reshape((CNAfull_now.shape[0],  CNAfull_now.shape[1]*CNAfull_now.shape[2] )) )
@@ -2568,37 +2441,18 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
 
 
 
-            
 
-
-            #print ('CNAfull_best', CNAfull_best.shape, CNAfull.shape, index1.shape)
-
-            #plt.imshow(CNAfull_best[:, :, 0])
-            #plt.show()
-
-            #for name, size in sorted(((name, sys.getsizeof(value)) for name, value in list(
-            #                        locals().items())), key= lambda x: -x[1])[:10]:
-            #    print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
-
-
-
-            #reward = np.copy(weight1)
             reward = torch.tensor(weight1).float() #NOTE: One can NOT do reward - np.mean(reward)! This is because the non-sampled cases have reward 0 by definition!
             del weight1
 
             lossAll = -1 * modelProbSum * reward
 
-            #loss = torch.mean(lossAll)
+
             loss = torch.mean(torch.sum(lossAll, axis=(0, 1)))
 
             del reward
 
-            #print (torch.mean(treeLoss))
-            #loss = loss + (torch.mean(treeLoss) * 1e-6) #0.001
-            #loss = loss + (torch.mean(treeLoss) * 1e-4)
-
-
-
+            
 
             negativeLogProb = model.normalizedBias(model.biasAdjuster())
 
@@ -2606,88 +2460,37 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
             lossAdjustment = (-1 * torch.mean(cellProb)) + (negativeLogProb / RDR.shape[0])
             lossAdjustment = lossAdjustment #* 10
 
-            #* 10
-
+            
+            if verbose:
+                print ('mean cell log prob')
+                print (torch.mean(cellProb))
             
 
-            print ('')
-            #print (cellProb)
-            print (torch.mean(cellProb))
-            #print ('cell', torch.max(cellProb))
-            #print (np.mean(modelProbSum.data.numpy() ))
             cellProb_mean = torch.mean(cellProb).data.numpy()
             cellProbList.append(cellProb_mean)
 
-            #for name, size in sorted(((name, sys.getsizeof(value)) for name, value in list(
-            #                        locals().items())), key= lambda x: -x[1])[:10]:
-            #    print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
-
-
-            #reg = 0
-            #for param in model.parameters():
-            #    reg += torch.sum(param ** 2)
-
+            
             if True:
 
-                #print (RDR.shape)
-                #print (multPaste.shape)
-
-                #plt.imshow(multPaste)
-                #plt.show()
-
-                #bestFit = np.argmax(multPaste, axis=0)
-
-
-
-
-                #counterAll[np.unique(multPos[bestFit, 1])] = counterAll[np.unique(multPos[bestFit, 1])] + 1
-
-                #if iter == iterPass:
-                #    CNAfull = CNAfull[np.unique(multPos[bestFit, 1])]
-                #    CNAfull_now = CNAfull_now[np.unique(multPos[bestFit, 1])]
-
-                
-
-                print ('bestFit', np.unique(bestFit).shape, bestFit.shape)
+                if verbose:
+                    print ('bestFit', np.unique(bestFit).shape, bestFit.shape)
 
                 bestCNA = savedCNA[savedCNA_mapper[ multPos[bestFit, 0], multPos[bestFit, 1] ] ]
 
-                #plt.imshow(bestCNA[:, :, 0])
-                #plt.show()
-
-
-                diff1 = bestCNA[:, 1:, 0] - bestCNA[:, :-1, 0]
-                diff1[diff1!=0] = 1
-                print ('diff1', np.sum(diff1))
 
                 np.savez_compressed(predict_file, bestCNA)
-
-
-                print ('counterAll', np.argwhere( counterAll >= 1).shape, np.argwhere( counterAll >= (iter // 2) + 1  ).shape ,iter,  (iter // 2) + 1 )
-
-
 
             
             del savedCNA
 
-
-
-            #for name, size in sorted(((name, sys.getsizeof(value)) for name, value in list(
-            #                        locals().items())), key= lambda x: -x[1])[:10]:
-            #    print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
-
             
-            print ("A")
             optimizer.zero_grad()
-            print ("B")
             loss.backward()
-            print ("C")
+            #Commented out optional feature currently not used in DeepCopy
             #if withAdjust:
             #    print ("C1")
             #    lossAdjustment.backward()
-            print ('C2')
             optimizer.step()
-            print ("D")
 
 
 
@@ -2868,7 +2671,7 @@ def findBestCNA(CNAfull, chr, RDR, BAF, originalError, modelName, bestCNAFile, N
 
 
 
-def simpleTrain(RDR_file, HAP_file, chr_file, initialCNA_file, initialUniqueCNA_file, originalError_file, modelName, predict_file, Ncall, noise_file, BAF_noise_file, balance, withAdjust, stopIter=False):
+def simpleTrain(RDR_file, HAP_file, chr_file, initialCNA_file, initialUniqueCNA_file, originalError_file, modelName, predict_file, Ncall, noise_file, BAF_noise_file, balance, withAdjust, stopIter=True):
 
 
     
@@ -2892,19 +2695,16 @@ def simpleTrain(RDR_file, HAP_file, chr_file, initialCNA_file, initialUniqueCNA_
         noiseBAF = loadnpz(BAF_noise_file)
 
     
-
-    if False:#not withAdjust:
+    #The code in the "False" option is currently not part of DeepCopy.
+    #It provides a speedup via precomputation of measurement probabilities, however, it reduces flexability of the algorithm. 
+    if False:#
         if False:
             print ("Skipping error calculation")
             originalError = loadnpz(originalError_file)
         else:
             print ("Do Error Calculation")
-            #originalError = calculateError(CNAfull, RDR, BAF, chr, noiseRDR)
-            #model = torch.load(modelName)
             originalError = calculateError(CNAfull, RDR, HAP, chr, noiseRDR, model, withAdjust)
             np.savez_compressed(originalError_file, originalError)
-
-        #quit()
 
         originalError = torch.tensor(originalError).float()
 
@@ -2914,59 +2714,6 @@ def simpleTrain(RDR_file, HAP_file, chr_file, initialCNA_file, initialUniqueCNA_
     
 
     trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, Ncall, noiseRDR, noiseBAF, withAdjust, balance, stopIter=stopIter)
-
-
-
-
-
-def simplePredict(RDR_file, BAF_file, chr_file, initialCNA_file, initialUniqueCNA_file, originalError_file, modelName, predict_file, Ncall, noise_file, withAdjust):
-
-
-
-
-    CNAfull = loadnpz(initialUniqueCNA_file)
-    RDR = loadnpz(RDR_file)
-    if BAF_file == '':
-        BAF = ''
-    else:
-        BAF = loadnpz(BAF_file)
-    chr = loadnpz(chr_file) - 1 #TODO REMOVE May 22 2023
-
-
-
-    originalError = loadnpz(originalError_file)
-    originalError = torch.tensor(originalError).float()
-
-
-
-    bestCNAFile = './temp/bestCNA3.npz'
-    Ncheck = 2
-    print ('findBest')
-
-    CNAfull = CNAfull.reshape((CNAfull.shape[0], CNAfull.shape[1], 1))
-
-    balance = 1.0
-
-    #findBestCNA(CNAfull, chr, RDR, BAF, originalError, modelName, bestCNAFile, Ncall, Ncheck, balance, withAdjust, doDouble=False) #Attempt
-
-
-    bestCNA = loadnpz(bestCNAFile)
-
-
-    #np.savez_compressed(predict_file, CNAfull[bestCNA])
-    #quit()
-
-    #pred_file = './temp/predCNA3.npz'
-
-    print ('predictCNA')
-
-    noiseRDR = loadnpz(noise_file)
-
-    predictCNA(CNAfull, chr, RDR, BAF, originalError, '', '', modelName, bestCNAFile, Ncall, predict_file, noiseRDR, balance, withAdjust, doDouble=False) #Attempt
-
-
-
-
 
 
 
@@ -3002,11 +2749,12 @@ def easyRunRL(outLoc):
     #balance = 2.0
     balance = 1.0
 
+    print ('DeepCopy — Step 1/1: Optimizing deep learning model... ')
     simpleTrain(RDR_file, HAP_file, chr_file, initialCNA_file, initialUniqueCNA_file, originalError_file, modelName, predict_file, Ncall, noise_file, BAF_noise_file, balance, withAdjust)
 
 
-#trainModel()
-#quit()
 
-#Idea: Maybe don't allow amplification from 1 to 2 (for example) if the level of all bins is 3 in the region.
-#If it under-amplifies for all bins, it may be a stupid sample.
+
+#outLoc = '/Users/stefanivanovic/Desktop/Coding/Bio/CNA/data/TN3copy'
+#easyRunRL(outLoc)
+#quit()

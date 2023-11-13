@@ -302,7 +302,7 @@ def cellDoSmallBinning(read_folder, hist_file, chr_file, uniqueCell_file):
         a1 = a0 + 1
         read_folder2 = read_folder + '/' + str(a1)
 
-        print (a1)
+        #print (a1)
 
         if a0 == 0:
             fnames = os.listdir(read_folder2)
@@ -458,7 +458,7 @@ def doHapSmallBinning(name_file, uniqueCell_file, nameOld_folder, hap_folder, ch
         
         chrNum = str(chrA + 1)
 
-        print (chrNum)
+        #print (chrNum)
 
         hap_file = hap_folder + 'chr_' + chrNum + '.npz'
         position_file = hap_folder + 'positions_chr' + chrNum + '.npz'
@@ -485,8 +485,8 @@ def doHapSmallBinning(name_file, uniqueCell_file, nameOld_folder, hap_folder, ch
             else:
                 excludeSum += 1
         
-        print (positions.shape)
-        print ('excluded', excludeSum)
+        #print (positions.shape)
+        #print ('excluded', excludeSum)
 
 
 
@@ -496,14 +496,6 @@ def doHapSmallBinning(name_file, uniqueCell_file, nameOld_folder, hap_folder, ch
 
     np.savez_compressed(rawHAP_file, histAll)
     
-    
-
-    #BAF = (histAll[:, :, 1] + 1e-3) / (np.sum(histAll, axis=2) + 1e-3)
-
-    #plt.imshow(BAF)
-    #plt.show()
-
-    True
 
 
 
@@ -677,32 +669,7 @@ def findGCadjustment(refGenome, refLoc, hist_file, adjustment_file, chr_file, lo
             gc_num[args1] = np.copy(gc_num_chr[:args1.shape[0]])
         #map_num[args1] = np.copy(map_chr[:args1.shape[0]])
 
-    #quit()
-    #data = data[args1]
-
-
-    #print (sum1.shape)
-    #print (gc_num.shape)
-    #quit()
-
-    #print (chr_name)
-    #quit()
-
-
-    #gc_num = gc_num[chr_name=='1']
-
-    #print (gc_num.shape)
-    #print (sum1.shape)
-    #quit()
-
-    #print (np.max(pos_end[chr_name==1]))
-
-    #print (sum1.shape[0] * 1000)
-    #quit()
-
-    #print (gc_num.shape)
-    #print (sum1.shape)
-    #quit()
+    
 
 
 
@@ -732,23 +699,12 @@ def findGCadjustment(refGenome, refLoc, hist_file, adjustment_file, chr_file, lo
         return np.log(y)-jz, jz
 
 
-    #plt.scatter(gc_num[0::100], sum1[0::100])
-    #plt.scatter(a1)
-    #plt.show()
-
-    #_, dist_map = adjust_lowess(map_num, sum1+1, f=0.05)# +0.01)
-
-
-    #plt.scatter(map_num[0::100], np.log(sum1[0::100]+1))
-    #plt.scatter(map_num[0::100], dist_map[0::100])
-    #plt.show()
-
-    #quit()
+    
 
     # _, dist_gc = adjust_lowess(gc_num, sum1+1, f=0.05)# +0.01)
     _, dist_gc = adjust_lowess(gc_num, sum1+1, f=0.2)# +0.01) #Updates 0.05 to 0.1 due to 100k
 
-    if True:
+    if False:
         import matplotlib.pyplot as plt
         plt.scatter(gc_num[0::100], np.log(sum1+1)[0::100])
         plt.scatter(gc_num[0::100], dist_gc[0::100])
@@ -869,7 +825,7 @@ def saveRDR(RDR_file, adjustment_file, chr_file, goodSubset_file, chr_file_2, RD
     count1 = 0
     chr_unique = np.unique(chr)
     for a in range(chr_unique.shape[0]):
-        print (a)
+        #print (a)
         args1 = np.argwhere(chr == chr_unique[a])[:, 0]
 
         args1 = args1[:N * (args1.shape[0] // N)]
@@ -939,8 +895,8 @@ def saveRDR(RDR_file, adjustment_file, chr_file, goodSubset_file, chr_file_2, RD
 
     #adjustment_new = adjustment_new[:count1]
 
-    print (RDR_new.shape)
-    print (chr_new.shape)
+    #print (RDR_new.shape)
+    #print (chr_new.shape)
 
     #print (RDR2.shape)
     #print (chr_new2.shape)
@@ -964,79 +920,6 @@ def saveRDR(RDR_file, adjustment_file, chr_file, goodSubset_file, chr_file_2, RD
 
 
 
-
-if False:
-    hapHist_file = './data/' + folder1 + '/initial/hapHist_10k.npz'
-    chr_file = './data/' + folder1 + '/initial/allChr_10k.npz'
-
-    hapHist = loadnpz(hapHist_file)
-    chr = loadnpz(chr_file)
-
-    hapHist = hapHist[:, chr==19-1]
-
-    cellCounts = np.sum(hapHist, axis=(1, 2))
-    #max1 = np.max(cellCounts)
-    #bestCell = np.argwhere(cellCounts == max1)[0, 0]
-
-    #hap1 = hapHist[bestCell]
-
-    #M = 1000
-    M = 500
-    #M = 50
-    N = hapHist.shape[1] // M
-
-    hapHist = hapHist[:, :N*M]
-    hapHist = hapHist.reshape((hapHist.shape[0], N, M, 2))
-    hapHist = np.sum(hapHist, axis=2)
-
-    print (np.mean(hapHist, axis=(0, 2)))
-
-    BAF = hapHist[:, :, 0] / np.sum(hapHist, axis=2)
-
-
-    #goodOnes = np.argsort(BAF[:, 14])[-105:-5]
-    #goodOnes = np.argsort(BAF[:, 3])[:100]
-    goodOnes = np.argsort(BAF[:, 7])[:100]
-
-
-    #plt.plot( hap1[:, 0] / np.sum(hap1, axis=1) )
-    #plt.imshow(BAF[:30],  cmap='bwr', vmin=0, vmax=1)
-    plt.imshow(BAF[goodOnes ],  cmap='bwr', vmin=0, vmax=1)
-    plt.show()
-
-    quit()
-
-    #9, 10, 11
-
-    #balancedChunk = hapHist[goodOnes, 9:12]
-    balancedChunk = hapHist[goodOnes, 5:6]
-
-    totalChunk = np.sum(balancedChunk, axis=2)
-    BAFchunk = balancedChunk[:, :, 0].astype(float) / totalChunk.astype(float)
-
-    #print (np.mean(totalChunk))
-    #plt.scatter(  totalChunk.reshape((-1,)) , BAFchunk.reshape((-1,)) )
-    #plt.show()
-
-    plt.hist( BAFchunk.reshape((-1,)), bins=100)
-    plt.show()
-
-    quit()
-
-    plt.imshow(BAF[ goodOnes  ],  cmap='bwr', vmin=0, vmax=1)
-    plt.show()
-    quit()
-    plt.plot(BAF[1])
-    plt.plot(BAF[3])
-    plt.show()
-    quit()
-
-
-
-    print (hapHist.shape)
-
-
-    quit()
 
 
 
@@ -1063,13 +946,19 @@ doBAF = True
 
 def runProcessFull(outLoc, refLoc, refGenome):
 
+    numSteps = '9'
+    stepName = 6
 
+
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Creating bins... ', end='')
     read_folder = outLoc + '/readCounts/pos'
     name_folder = outLoc + '/readCounts/cell'
     hist_file = outLoc + '/initial/allHistBam_100k.npz' #originaly 10k
     chr_file = outLoc + '/initial/allChr_100k.npz' #originaly 10k
     uniqueCell_file = outLoc + '/initial/cellNames.npz'
-    #cellDoSmallBinning(read_folder, hist_file, chr_file, uniqueCell_file)
+    cellDoSmallBinning(read_folder, hist_file, chr_file, uniqueCell_file)
 
 
 
@@ -1082,7 +971,9 @@ def runProcessFull(outLoc, refLoc, refGenome):
     chr_file = outLoc + '/initial/allChr_100k.npz'
     rawHAP_file = outLoc + '/initial/allRawHAP_100k.npz'
     uniqueCell_file = outLoc + '/initial/cellNames.npz'
-    #doHapSmallBinning(name_file, uniqueCell_file, nameOld_folder, hap_folder, chr_file, rawHAP_file)
+    doHapSmallBinning(name_file, uniqueCell_file, nameOld_folder, hap_folder, chr_file, rawHAP_file)
+    print ('Done')
+
 
 
     hist_file = outLoc + '/initial/allHistBam_100k.npz' #used to be 10k
@@ -1101,7 +992,11 @@ def runProcessFull(outLoc, refLoc, refGenome):
     #if folder1 == 'DLP':
     #    lowHapDoImbalance = True
 
-    #findGCadjustment(refGenome, refLoc, hist_file, adjustment_file, chr_file, lowHapDoImbalance, rawHAP_file, hapHist_file,  chr_file2, goodSubset_file, RDR_file, totalRead_file)
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': GC bias correction... ', end='')
+
+    findGCadjustment(refGenome, refLoc, hist_file, adjustment_file, chr_file, lowHapDoImbalance, rawHAP_file, hapHist_file,  chr_file2, goodSubset_file, RDR_file, totalRead_file)
 
 
     
@@ -1116,6 +1011,8 @@ def runProcessFull(outLoc, refLoc, refGenome):
     cellGood_file = outLoc + '/initial/cellGood.npz'
     doBAF = True
     saveRDR(RDR_file, adjustment_file, chr_file, goodSubset_file, chr_file_2, RDR_file_2, cellGood_file, doBAF, hapHist_file=hapHist_file, BAF_file_2=BAF_file_2)
+    print ('Done')
+
 
 refLoc = './data/refNew'
 outLoc = './data/newTN3'

@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 #os.system('ls')
 #quit()
@@ -6,6 +7,7 @@ import os
 import numpy as np
 from pathlib import Path
 import sys
+import time
 
 #from raw import countReads
 
@@ -44,12 +46,12 @@ def loadnpz(name, allow_pickle=False):
 
 
 
+
 def systemPrint(command1):
 
-    print (command1)
-    os.system(command1)
-
-
+    #print (command1)
+    #os.system(command1)
+    subprocess.run(command1, shell=True)
 
 
 def makeAllDirectories(name):
@@ -58,7 +60,7 @@ def makeAllDirectories(name):
     command1 = 'mkdir ' + name
     systemPrint(command1)
 
-    
+    systemPrint(command1 + '/temp')
     systemPrint(command1 + '/counts')
     systemPrint(command1 + '/info')
     systemPrint(command1 + '/phased')
@@ -68,6 +70,7 @@ def makeAllDirectories(name):
     systemPrint(command1 + '/initial')
     systemPrint(command1 + '/binScale')
     systemPrint(command1 + '/model')
+    
 
     
     for chrNum in range(1, 22+1):
@@ -77,6 +80,51 @@ def makeAllDirectories(name):
 
 #makeAllDirectories('TN3')
 #quit()
+
+
+def runParallel(commandList, outLoc):
+
+    #Different operating systems have different issues in terms of running commands and waiting for them to complete
+    #This simple "hack" ensures the command has completed before moving on. 
+
+    randomInt = np.random.randint(1000000000)
+
+    tempLoc = outLoc + '/temp/'
+    tempFileList = []
+    commandList2 = []
+    for a in range(len(commandList)):
+        tempFile = tempLoc + str(randomInt) + '_' + str(a) + '.txt'
+        command2 = ' ( ' + commandList[a] + ' ; touch ' + tempFile + ' ) '
+        commandList2.append(command2)
+        tempFileList.append(tempFile)
+    
+    commandFull = '&'.join(commandList2)
+
+    systemPrint(commandFull)
+    #os.popen(commandFull).read()
+    #print (commandFull)
+
+    wait1 = True
+    while wait1:
+        #print ('')
+        wait1 = False
+        for file1 in tempFileList:
+            if not os.path.exists(file1):
+                wait1 = True
+                #print ('nope')
+                #print (file1)
+
+        if wait1:
+            time.sleep(10)
+    
+    for file1 in tempFileList:
+        commandRemove = 'rm ' + file1
+        systemPrint(commandRemove)
+    
+
+
+
+
 
 
 def addReadGroup(dataName):
@@ -355,18 +403,18 @@ def loadReference(chrNum):
 
     link1 = 'http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/' + originalName
     command1 = 'wget ' + link1
-    os.system(command1)
+    systemPrint(command1)
     command2 = 'mv ./' + originalName +  ' ./data/reference/vcf/chr' + chrNum + '.vcf.gz' + tbiPart
-    os.system(command2)
+    systemPrint(command2)
     #quit()
 
     tbiPart = '.tbi'
     originalName = 'ALL.chr' + chrNum + '.phase3_shapeit2_mvncall_integrated_' + vname + '.20130502.genotypes.vcf.gz' + tbiPart
     link1 = 'http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/' + originalName
     command1 = 'wget ' + link1
-    os.system(command1)
+    systemPrint(command1)
     command2 = 'mv ./' + originalName +  ' ./data/reference/vcf/chr' + chrNum + '.vcf.gz' + tbiPart
-    os.system(command2)
+    systemPrint(command2)
 
 
 #loadReference('X')
@@ -457,7 +505,11 @@ def findCombinedCounts(bamLoc, refLoc, outLoc, refGenome):
     #    refName = 'hg19'
 
     commandList1 = []
-    commandList2 = []
+
+    commandList_1 = []
+    commandList_2 = []
+
+    checkFiles = []
 
     command1 = ''
     for a in range(1, 22+1):
@@ -478,28 +530,63 @@ def findCombinedCounts(bamLoc, refLoc, outLoc, refGenome):
             refFasta = refLoc + '/hg19.fa'
             renameRef = refLoc + '/vcf_hg19/chr' + chrNum + '.vcf.gz'
 
+        checkFiles.append(countsFile + '.tbi')
+
 
         command1 = 'bcftools mpileup --ignore-RG -Ou -R ' + renameRef + ' -f ' + refFasta + ' ' + bamLoc + ' | bcftools call -vmO z -o ' + countsFile
-        commandList1.append(command1)
+        commandList_1.append(command1)
 
         command2 = 'bcftools index -t ' + countsFile
-        commandList2.append(command2)
+        commandList_2.append(command2)
+
+        command1 = ' ( ' + command1 + ' ; ' + command2 + ' ) '
+
+        commandList1.append(command1)
 
     
-    commandFull1 = ' & '.join(commandList1)
-    systemPrint(commandFull1)
-    commandFull2 = ' & '.join(commandList2)
-    systemPrint(commandFull2)
 
-    #systemPrint(command1)
-    True
+    if False:
+        commandFull1 = ' & '.join(commandList1)
+        systemPrint(commandFull1)
+
+        #runParallel(commandList1, outLoc)
+        
+        
+        #commandFull2 = ' & '.join(commandList2)
+        #systemPrint(commandFull2)
+
+        #for a in range(len(commandList2)):
+        #    command2 = commandList2[a]
+        #    systemPrint(command2)
+
+        wait1 = True
+        while wait1:
+            print ('')
+            wait1 = False
+            for file1 in checkFiles:
+                if not os.path.exists(file1):
+                    print (file1)
+                    print ('nope')
+                    wait1 = True
+
+            if wait1:
+                time.sleep(10)
+
+
+
+
+        #systemPrint(command1)
+        True
+
+    runParallel(commandList_1, outLoc)
+    runParallel(commandList_2, outLoc)
 
 
 
 
 
 
-def runPhasing(outLoc, refGenome):
+def runPhasing(outLoc, refGenome, refLoc):
 
 
     #if useHG38:
@@ -508,6 +595,8 @@ def runPhasing(outLoc, refGenome):
     #    refName = 'hg19'
 
     #command1 = ''
+    commandList1 = []
+    commandList2 = []
     for a in range(1, 22+1):
         chrNum = str(a)
 
@@ -531,11 +620,27 @@ def runPhasing(outLoc, refGenome):
         command6_output = ' --output ' + phasedFile + ' --thread 8'
         
         command6 = command6_input + command6_output
-        systemPrint(command6)
+        #systemPrint(command6)
+        commandList1.append(command6)
 
         command7 = 'bcftools index -t ' + str(phasedFile) 
 
-        systemPrint(command7)
+        #systemPrint(command7)
+        commandList2.append(command7)
+
+    
+    if False:
+        commandFull1 = ' & '.join(commandList1)
+        systemPrint(commandFull1)
+        #commandFull2 = ' & '.join(commandList2)
+        #systemPrint(commandFull2)
+
+        for a in range(len(commandList2)):
+            command2 = commandList2[a]
+            systemPrint(command2)
+
+    runParallel(commandList1, outLoc)
+    runParallel(commandList2, outLoc)
 
 
 
@@ -587,8 +692,8 @@ def findSubsetCounting(outLoc):
 
         bcf_out.close()
 
-        print (restrictedFile)
-        print (count1, count2)
+        #print (restrictedFile)
+        #print (count1, count2)
 
         
 
@@ -613,7 +718,9 @@ def findIndividualCounts(bamLoc, refLoc, outLoc, refGenome):
     #else:
     #    refName = 'hg19'
 
-    command1 = ''
+    #command1 = ''
+
+    commandList1 = []
     for a in range(1, 22+1):
         chrNum = str(a)
 
@@ -633,7 +740,13 @@ def findIndividualCounts(bamLoc, refLoc, outLoc, refGenome):
         countsFile = outLoc + '/counts/seperates_chr' + chrNum + '.vcf.gz'
         
         command1 = 'bcftools mpileup --annotate FORMAT/AD -Ou -R ' + restrictedFile + ' -f ' + refFasta + ' ' + bamLoc + ' | bcftools call -vmO z -o ' + countsFile
-        systemPrint(command1)
+        #systemPrint(command1)
+        commandList1.append(command1)
+    
+    #commandFull1 = ' & '.join(commandList1)
+    #systemPrint(commandFull1)
+
+    runParallel(commandList1, outLoc)
     
 
 
@@ -903,7 +1016,7 @@ def ACTsplitter():
 
             command1 = 'samtools index ' + folder1 + fnames[a]
 
-            os.system(command1)
+            systemPrint(command1)
 
 #ACTsplitter()
 #quit()
@@ -1169,13 +1282,13 @@ def findHaplotypeCounts(chrNum, outLoc):
     positionsHap = np.array([positions[start1], positions[end1-1]]).T
     barcodes = np.array(headerBar)
 
-    print (sum1.shape)
+    #print (sum1.shape)
 
     np.savez_compressed(outLoc + '/counts/allcounts_chr' + chrNum + '.npz', sum1)
     np.savez_compressed(outLoc + '/phasedCounts/barcodes_chr' + chrNum + '.npz', barcodes)
     np.savez_compressed(outLoc + '/phasedCounts/positions_chr' + chrNum + '.npz', positionsHap)
 
-    quit()
+    #quit()
 
 
 
@@ -1480,7 +1593,7 @@ def runAllGroupedEvidenceSVD(outLoc):
 
     for chrNum0 in range(1, 22+1):
         chrNum = str(chrNum0)
-        print (chrNum)
+        #print (chrNum)
         groupedEvidenceSVD(outLoc, chrNum)
 
 
@@ -1509,9 +1622,9 @@ def findReadCounts(bamLoc, outLoc):
     for b in range(0, 22):
         chrName = str(int(b + 1))
 
-        print ('')
-        print (chrName)
-        print ('')
+        #print ('')
+        #print (chrName)
+        #print ('')
 
         chrNameLoad = chrName
         if chrType == 'name':
@@ -1523,8 +1636,8 @@ def findReadCounts(bamLoc, outLoc):
         a = 0
         for read in samfile.fetch(chrNameLoad):
             a += 1
-            if (a % 10000000) == 0:
-                print (a)
+            #if (a % 10000000) == 0:
+            #    print (a)
 
             cellName = read.get_tag(tagName)
 
@@ -1555,93 +1668,57 @@ def findReadCounts(bamLoc, outLoc):
 
 
 
-def OLD_runAllSteps(dataName, useHG38):
-
-    True
-    
-    #makeAllDirectories(dataName)
-
-    #addReadGroup(dataName)
-
-    #mergeBams(dataName)
-
-    #findCombinedCounts(dataName, useHG38)
-
-    #runPhasing(dataName, useHG38)
-
-    #findSubsetCounting(dataName)
-
-    #findIndividualCounts(dataName, useHG38)
-
-    #runcountReads(dataName)
-
-    #runAllHaplotypeCounts(dataName)
-
-    #runAllGroupedEvidenceSVD(dataName)
 
 
 def runAllSteps(bamLoc, refLoc, outLoc, refGenome):
 
-
-    True
     
+    numSteps = '9'
+    stepName = 0
+
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Creating directories... ', end='')
     makeAllDirectories(outLoc)
+    print ("Done")
 
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Running bcftools on pseudobulk (may take hours to days)... ', end='')
     findCombinedCounts(bamLoc, refLoc, outLoc, refGenome)
+    print ("Done")
 
-    runPhasing(outLoc, refGenome)
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Running SHAPE-IT... ', end='')
+    runPhasing(outLoc, refGenome, refLoc)
+    print ("Done")
 
-    findSubsetCounting(outLoc)
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Running bcftools on individual cells... ', end='')
+    findSubsetCounting(outLoc) #This small processing step doesn't require its own step printed in terminal
 
     findIndividualCounts(bamLoc, refLoc, outLoc, refGenome)
+    print ("Done")
 
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Calculating total read depths... ', end='')
     findReadCounts(bamLoc, outLoc)
+    print ("Done")
 
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Phasing haplotype blocks... ', end='')
     runAllHaplotypeCounts(outLoc)
 
     runAllGroupedEvidenceSVD(outLoc)
-
-    #runProcessFull(outLoc, refLoc, refGenome)
-
-
-#for a in range(1, 23):
-#    #chr11_hg38_rename.vcf.idx
-#    name1 = 'rm ./data/refNew/vcf_hg38/rejected_variants_chr' + str(a) + '.vcf'
-#    systemPrint(name1)
-#
-#    #systemPrint('mv ./data/refNew/vcf_hg38/chr' + str(a) + '_hg38_rename.vcf.gz.tbi ./data/refNew/vcf_hg38/chr' + str(a) + '.vcf.gz.tbi')
-#quit()
-
-#runAllSteps('ACT10x', True)
-#quit()
-
-
-
-#bamLoc = './data/TN3_FullMerge.bam'
-#refLoc = './data/refNew'
-#outLoc = './data/newTN3'
-#refGenome = 'hg38'
-
-
-#runAllSteps(bamLoc, refLoc, outLoc, refGenome)
-
-
-if __name__ == "__main__":
-    #keyList = ['-input', '-ref', '-output', '-refGenome']
-    listIn = np.array(sys.argv)
-    bamLoc, refLoc, outLoc, refGenome = listIn[1], listIn[2], listIn[3], listIn[4]
-
-    if bamLoc == 'testCheck':
-        print ('test succeed')
-        quit()
-
-    runAllSteps(bamLoc, refLoc, outLoc, refGenome)
+    print ('Done')
 
 
 
 
-
-    
 
 
 

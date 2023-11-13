@@ -4,7 +4,7 @@
 import numpy as np
 
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 import scipy
 from scipy import stats
@@ -22,9 +22,7 @@ import pandas as pd
 #from RLCNA import *
 
 
-#for fancy plot Chisel
-from matplotlib.colors import LinearSegmentedColormap
-from itertools import cycle
+
 
 
 
@@ -45,7 +43,13 @@ def loadnpz(name, allow_pickle=False):
 
 
 
+def tweakBAF(x):
 
+    delta = 0.01
+
+    x = (x * (1.0 - (delta * 2) ) ) + delta
+
+    return x
 
 def easyUniqueValMaker(X):
     inverse1 = uniqueValMaker(X)
@@ -135,6 +139,7 @@ def uniqueProfileMaker(X):
 
 def haplotypePlotter(predCNA, doCluster=False, withLinkage=[], saveFile='', chr=[], plotSize=[], vertLine=[]):
     
+    import matplotlib.pyplot as plt
     import matplotlib as mpl
     import seaborn as sns
 

@@ -3,7 +3,7 @@
 import numpy as np
 
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 import scipy
 from scipy import stats
@@ -18,18 +18,20 @@ from torch.optim import Optimizer
 
 #import seaborn as sns
 
-#from shared import *
+if __name__ == "__main__":
+    from shared import *
+else:
+    from .shared import *
 
-from .shared import *
-
-
-
-
-
+from tqdm import tqdm
 
 
 
 
+
+#predCNA = loadnpz('/Users/stefanivanovic/Desktop/Coding/Bio/CNA/data/TN3_example/model/pred_now.npz')
+#haplotypePlotter(predCNA, doCluster=True)
+#quit()
 
 
 
@@ -443,7 +445,7 @@ def findVariableBins(RDR_file, bins_file, chr_file, totalRead_file, doBAF, BAF_f
     for a in range(unique1.shape[0]):
         #for a in range(1):
 
-        print (a)
+        #print (a)
 
 
         args1 = np.argwhere(chr == unique1[a])[:, 0]
@@ -463,8 +465,8 @@ def findVariableBins(RDR_file, bins_file, chr_file, totalRead_file, doBAF, BAF_f
         #print (RDR_mini.shape)
         #quit()
 
-        print (RDR_mini.shape)
-        print (BAF_mini.shape)
+        #print (RDR_mini.shape)
+        #print (BAF_mini.shape)
         
         bins_mini = coreFindBins(RDR_mini, doBAF, BAF_mini)
 
@@ -472,7 +474,7 @@ def findVariableBins(RDR_file, bins_file, chr_file, totalRead_file, doBAF, BAF_f
 
 
         _, index1 = np.unique(bins_mini, return_index=True)
-        print (index1)
+        #print (index1)
 
 
 
@@ -652,25 +654,6 @@ def applyVariableBins(RDR_file, bins_file, chr_file, RDR_file2, noise_file, chr_
         
         noise_mini = data[:, args1] - data_avg[:, count1].reshape((-1, 1))
 
-        '''
-        noise_mini_fft = np.fft.fft(noise_mini, axis=1) 
-        noise_mini_fft = noise_mini_fft / (noise_mini.shape[1] ** 0.5) #This just corrects for the scaling included in np.fft.fft
-        noise_mini_fft = np.abs(noise_mini_fft)[:, 1:] ** 2
-        noise_mini_fft = noise_mini_fft / noise_mini.shape[1] #To make it an average not a sum
-
-        
-
-        arange1 = np.arange(noise_mini_fft.shape[1]) + 1
-        arange2 = np.min(  np.array([arange1, arange1[-1::-1] ]), axis=0 )
-        arange3 = arange2
-        
-
-        arange3 = arange3.reshape((1, -1))
-        
-
-        noise_mini_val = noise_mini_fft / arange3 #(arange2 ** 2) 
-        noise_mini_val = np.sum(noise_mini_val, axis=1) ** 0.5
-        '''
         
         noise_mini_val = estimateRDRnoise(noise_mini) ** 0.5
 
@@ -682,10 +665,7 @@ def applyVariableBins(RDR_file, bins_file, chr_file, RDR_file2, noise_file, chr_
 
 
 
-    #diff1 = np.abs(data_avg[:, 1:] - data_avg[:, :-1])
-    #diff1 = np.mean(diff1, axis=1)
-    #noise1 = noise1 / np.mean(noise1, axis=1).reshape((-1, 1))
-    #noise1 = noise1 * diff1.reshape((-1, 1))
+    
 
     for a in range(data.shape[0]):
         noise1[a] = noise1[a] / np.mean(data_avg[a])
@@ -696,39 +676,18 @@ def applyVariableBins(RDR_file, bins_file, chr_file, RDR_file2, noise_file, chr_
     np.savez_compressed(chr_file2, chr_avg)
     np.savez_compressed(noise_file, noise1)
 
-    #np.savez_compressed(adjustment_file2, adjust_avg)
-
-    
 
     if doBAF:
         np.savez_compressed(BAF_file2, HAP_sum)
         np.savez_compressed(BAF_noise_file, BAF_noise)
         
 
-    #np.savez_compressed(call_file2, call_avg)
-
-
-
-
-
-#RDR_file = './data/DLP/filtered_RDR.npz'
-#chr_file = './data/DLP/chr.npz'
-#bins_file = './data/DLP/bins.npz'
-#RDR_file2 = './data/DLP/filtered_RDR_avg2.npz'
-#noise_file = './data/DLP/filtered_RDR_noise2.npz'
-#chr_file2 = './data/DLP/chr_avg2.npz'
-#call_file = './fromServer/DLP_calls.npz'
-#call_file2 = './data/DLP/calls_avg2.npz'
 
 
 
 
 
 
-#folder1 = 'DLP'
-#folder1 = '10x'
-#folder1 = 'ACT10x'
-folder1 = 'TN3'
 
 bins_file = './data/' + folder1 + '/binScale/bins.npz'
 chr_file = './data/' + folder1 + '/initial/chr_100k.npz'
@@ -740,12 +699,6 @@ doBAF = True
 BAF_file = './data/' + folder1 + '/initial/HAP_100k.npz'
 BAF_file2 = './data/' + folder1 + '/binScale/filtered_HAP_avg.npz'
 BAF_noise_file = './data/' + folder1 + '/binScale/BAF_noise.npz'
-#adjustment_file = './data/' + folder1 + '/initial/gc_adjustment_100k.npz'
-#adjustment_file2 = './data/' + folder1 + '/initial/gc_adjustment_avg.npz'
-
-#BAF_noise_file = './data/' + folder1 + '/binScale/filtered_BAF_noise.npz'
-
-
 
 #applyVariableBins(RDR_file, bins_file, chr_file, RDR_file2, noise_file, chr_file2, doBAF, BAF_file=BAF_file, BAF_file2=BAF_file2, BAF_noise_file=BAF_noise_file)
 #quit()
@@ -768,13 +721,7 @@ def mapBAF(x):
 #print (RDR.shape)
 #quit()
 
-def tweakBAF(x):
 
-    delta = 0.01
-
-    x = (x * (1.0 - (delta * 2) ) ) + delta
-
-    return x
 
 
 
@@ -792,21 +739,17 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
     def findBestRegion(RDR, HAP):#, N):
 
-        #print (RDR_change, BAF_change)
-        #quit()
+
 
         RDR = RDR - np.mean(RDR)
         RDR_cumsum = paddedCumSum(RDR)
         RDR_sq_cumsum = paddedCumSum(RDR**2)
 
-        #if BAF != '':
-        #    BAF = BAF - np.mean(BAF)
-        #    BAF_cumsum = paddedCumSum(BAF)
-        #    BAF_sq_cumsum = paddedCumSum(BAF**2)
+       
 
         if type(HAP) != type(''):
             BAF = HAP[:, 1] / (np.sum(HAP, axis=1) + 1e-5) #Just removing division by zero
-            weight = np.sum(HAP, axis=1)#.astype(float)
+            weight = np.sum(HAP, axis=1)
             
             
 
@@ -818,13 +761,10 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
         size1 = RDR.shape[0]
 
-        #N = 100
+
         N = 1
-        #print ('findBestRegion')
-        #print (N)
-        #print (RDR.shape)
         sizeRound = ((RDR.shape[0] - 1) // N) + 1
-        #print (sizeRound)
+        
 
         data1 = np.zeros((  sizeRound ** 2, 3))
         count1 = 0
@@ -834,33 +774,16 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
                 b = (b0 * N)
 
 
-                #if b >= (a + 5):
                 if b >= (a + 5):
-                    #continue1 = False
-                    #if RDR.shape[0] > 10:
-                    #    if (a % 2 == 0) and (b % 2 == 1):
-                    #        continue1 = True
-                    #else:
-                    #    continue1 = True
+                    
 
-                    if True:#continue1:
-                        #RDR1 = RDR[a:b]
-
-                        #if BAF == '':
-                        #    BAF1 = ''
-                        #else:
-                        #    BAF1 = BAF[a:b]
-                        #    weight1 = weight[a:b]
-
-                        #'''
-                        #error1 = giveRegionError(RDR1, BAF1, a, b, size1)
+                    if True:
 
                         length0 = b - a
                         error1_sq = (RDR_sq_cumsum[b] - RDR_sq_cumsum[a]) / length0
                         error1_me = (RDR_cumsum[b] - RDR_cumsum[a]) / length0
 
                         error1 = error1_sq - (error1_me ** 2)
-                        #error1 = (error1 / (RDR_change ** 2)) + (5 / length0)
 
                         error1 = (error1 / length0) ** 0.5
 
@@ -878,58 +801,23 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
                                 error2_sq = (BAF_sq_cumsum[b] - BAF_sq_cumsum[a]) / (weight_sum ** 2)
                                 error2_me = (BAF_cumsum[b] - BAF_cumsum[a]) / weight_sum
 
-                                #error2 = error2_sq - (error2_me ** 2)
+
                                 error2 = error2_sq - ((error2_me ** 2) * weight_sq / (  weight_sum ** 2  ) )
+
+                                if error2 < 0:
+                                    error2 = 0
 
 
                                 error2 = error2 + (0.25 / (weight_sum) ) #Adding the intrinsic noise in the BAF
 
-                                
-                                
+                               
+
+
                                 error2 = error2 ** 0.5
-                                #print ('D', error2 , np.mean( (BAF1 - np.mean(BAF1)) ** 2 )  )
-                                #error1 = error1 * length0
-                                #error2 = error2 * length0
-
-                                #error1 = error1 + ((RDR_change ** 2) * (5 / length0))
-                                #error2 = error2 + ((BAF_change ** 2) * (5 / length0))
-
-
-                                #error2 = (error2 / (BAF_change ** 2)) + (5 / length0)
-                                #error2 = (error2 / length0) ** 0.5
-
-
-
-                        #error1 = error1 / length0
-                        #error2 = error2 / length0
-
-                        #length1 = length0 - 1
-                        #if a == 0:
-                        #    length1 += 2
-                        #if b == size1 - 1:
-                        #    length1 += 2
+                        
 
                         if type(BAF) != type(''):
                             error1 = 1/((1 / error1) + (1 / error2))
-
-                        if False:
-                            error1 = error1 + (0.1 * error2)
-                            error1 = error1 + 0.8
-
-                            error1 = error1 / length1
-
-                        #'''
-
-
-
-
-                        #error1_original = giveRegionError(RDR1, BAF1, a, b, size1)
-                        #error1 = error1_original
-                        #print (error1_original)
-                        #print (error1)
-                        #quit()
-
-
 
                         data1[count1, 0] = a
                         data1[count1, 1] = b
@@ -939,7 +827,7 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
 
 
-        #print (count1)
+
         data1 = data1[:count1]
 
 
@@ -950,13 +838,6 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
         start1, end1 = int(data1[min1, 0]), int(data1[min1, 1])
 
-        #print (start1, end1)
-
-        #plt.plot(data1[:, 2])
-        #plt.show()
-        #plt.imshow(img)
-        #plt.show()
-        #quit()
 
         return start1, end1
 
@@ -987,7 +868,7 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
 
 
-                #print (RDR1.shape)
+
                 start2, end2 = findBestRegion(RDR1, BAF1)#, N)
 
                 regionDone[doneCount1, 0] = start1 + start2
@@ -1009,9 +890,7 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
         regionDone = regionDone[:doneCount1]
 
-        #print (regionDone)
-        #print (regionDone[np.argsort(regionDone[:, 0])])
-        #quit()
+        
 
         return regionDone
 
@@ -1019,19 +898,8 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
     def findAllRegions(RDR, BAF, start1, end1, chr):
 
         RDR_change = np.mean(np.abs(RDR[1:]-RDR[:-1]))
-        #if BAF == '':
-        #    BAF_change = ''
-        #else:
-        #    BAF_change = np.mean(np.abs(BAF[1:]-BAF[:-1]))
+        
 
-        #print (RDR_change, BAF_change)
-        #plt.plot(RDR)
-        #plt.plot(BAF)
-        #plt.show()
-
-        #N = 100
-
-        #regions = np.zeros((1000, 2), dtype=int)
         regions = np.zeros((10000, 2), dtype=int)
 
         count1 = 0
@@ -1044,32 +912,24 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
             regionDone = regionDone + start1[a]
             size1 = regionDone.shape[0]
 
-            #print (regionDone)
-            #quit()
-            #print (regionDone)
-            #print (size1)
+            
             regions[count1:count1+size1] = regionDone
-            #regions[count1] = regionDone
-            #print (regions)
-            #quit()
+            
             count1 += size1
-            #count1 += 1
+            
 
-        #quit()
 
-        #print (regions)
 
         regions = regions[:count1]
 
-        #print (regions)
+        
         sizes = regions[:, 1] - regions[:, 0]
         regions = regions[sizes > 6]
-        #quit()
+        
 
         regions = regions[np.argsort(regions[:, 0])]
 
-        #print (regions)
-        #quit()
+        
 
         return regions
 
@@ -1079,20 +939,9 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
     
 
 
-
-    #patientNum0 = '1'
-
-
-    #x = loadnpz('./data/input/S0.npz')
-    #x = loadnpz('./data/input/filtered_S' + patientNum0 + '.npz')
-
     RDR_all = loadnpz(RDR_file)
 
-    #N = 50
-    #RDR_all = RDR_all[:N * (RDR1.shape[0] // N)]
-    #RDR1 = RDR1.reshape((RDR1.shape[0] // N, N))
-    #RDR1 = np.mean(RDR1, axis=1)
-
+    
 
 
     if BAF_file == '':
@@ -1100,15 +949,10 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
     else:
         BAF_all = loadnpz(BAF_file)
 
-    #x = x[:500]
+    
 
     chr = loadnpz(chr_File)
 
-    #argGood = loadnpz('./data/input/argFilter_S0.npz')
-
-    #dataCall = loadnpz('./data/input/call_S0.npz')[argGood]
-    #Calls of Chisel
-    #dataCall = loadnpz('./data/input/callCNA_S' + patientNum0 + '.npz')
 
     _, start1 = np.unique(chr, return_index=True)
     end1 = np.concatenate((start1[1:], np.zeros(1) + chr.shape[0])).astype(int)
@@ -1123,44 +967,29 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
     #54
 
-    #for rand1 in np.random.randint(x.shape[0], size=100):
-    for a0 in range(0, RDR_all.shape[0]):
+    
+    for a0 in tqdm(range(0, RDR_all.shape[0])):
 
         #a = perm1[a0]
         a = a0
 
 
 
-        print (a, RDR_all.shape[0])
+        #print (a, RDR_all.shape[0])
 
-        #RDR = x[a, :, 0]
-        #BAF = x[a, :, 1]
+        
         RDR = RDR_all[a]
         if type(BAF_all) == type(''):
             BAF = ''
             BAF1 = ''
         else:
             BAF1 = BAF_all[a]
-            #BAF1 = np.min(np.array([BAF, 1 - BAF]), axis=0)
+            
             
 
         regions = findAllRegions(RDR, BAF1, start1, end1, chr)
 
-        #print (regions)
-        #quit()
-
-        print (regions.shape)
-
-        if False:
-            bool1 = np.zeros(RDR.shape[0])
-            for b in range(regions.shape[0]):
-                #print (regions[b, 0], regions[b, 1])
-                bool1[regions[b, 0]:regions[b, 1]] = 1 + (b%2)
-            plt.plot(bool1)
-            plt.plot(RDR)
-            #plt.plot(BAF1)
-            plt.show()
-
+        
 
 
         size1 = regions.shape[0]
@@ -1176,6 +1005,7 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
         count1 = count2
 
+
     regionList = regionList[:count1]
 
     np.savez_compressed(region_file, regionList)
@@ -1185,19 +1015,13 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
 
 
-
-folder1 = 'DLP'
-#folder1 = '10x'
-#folder1 = 'ACT10x'
-#folder1 = 'TN3'
-chr_file = './data/' + folder1 + '/initial/chr_1M.npz'
-RDR_file = './data/' + folder1 + '/initial/RDR_1M.npz'
-region_file = './data/' + folder1 + '/binScale/regions.npz'
-HAP_file = './data/' + folder1 + '/initial/HAP_1M.npz'
+#outFolder = '/Users/stefanivanovic/Desktop/Coding/Bio/CNA/data/TN3_example'
+#chr_file = outFolder + '/initial/chr_1M.npz'
+#RDR_file = outFolder + '/initial/RDR_1M.npz'
+#region_file = outFolder + '/binScale/regions.npz'
+#HAP_file = outFolder + '/initial/HAP_1M.npz'
 #findRegions(RDR_file, HAP_file, chr_file, region_file)
 #quit()
-
-
 
 
 
@@ -1270,6 +1094,9 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
                     #error2_me = (BAF_cumsum[b] - BAF_cumsum[a]) / weight_sum
 
                     std2 = error2_sq - ((mean2 ** 2) * weight_sq / (  weight_sum ** 2  ) )
+
+                    if std2 < 0:
+                        std2 = 0
 
                     
                     std2 = std2 + (0.25 / weight_sum ) #Adding the intrinsic noise in the BAF
@@ -1701,14 +1528,10 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
 
 
     #for rand1 in np.random.randint(x.shape[0], size=100):
-    for a in range(0, RDR_all.shape[0]):
+    for a in tqdm(range(RDR_all.shape[0])):
 
         #a = perm1[a]
 
-        print (a, RDR_all.shape[0])
-
-        #RDR = x[a, :, 0]
-        #BAF = x[a, :, 1]
         RDR = RDR_all[a]
         if type(HAP_all) == type(''):
             HAP = ''
@@ -1723,10 +1546,7 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
         count2 = count1
         while regionList[count2 % regionList.shape[0], 0] == a:
             count2 += 1
-        #count2 += 1
-
-        #print (regionList[count1:count2])
-        #quit()
+        
 
         regions = regionList[count1:count2, 1:]
         count1 = count2
@@ -1752,16 +1572,10 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
             divideGood, dividerList, errorList = findBestDivider(means1, vars1, noises1, precise)
 
 
-            #print ('done1')
-            #quit()
             
 
-
-            #plt.plot(errorList / (chr.shape[0] * 2))
-            #plt.show()
-
-
-            if False:#a >= 100:#abs(divideGood - 0.27) > 0.04:#a > 80:#a in [0, 18, 66]:#[0, 18]:
+            #The code within the False if statement is for debugging during developement 
+            if False:
                 print (divideGood)
                 meansPlot = np.zeros(RDR.shape[0])
                 bool1 = np.zeros(RDR.shape[0])
@@ -1776,34 +1590,12 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
                 #plt.plot(RDR)
                 plt.plot(RDR / divideGood)
                 plt.plot(meansPlot)
-
-
                 #plt.plot(BAF1)
                 plt.show()
 
-            if False:#a == 18:
-
-                BAF = HAP[:, 0] / (np.sum(HAP, axis=1 ) + 1e-5)
-
-                BAFplot = (BAF-1)*2
-                BAFplot[ np.sum(HAP, axis=1) < 10 ] = BAFplot[ np.sum(HAP, axis=1) < 10 ] / 0
-
-                plt.plot(np.zeros(RDR.shape[0])-2, c='grey')
-                plt.plot(np.zeros(RDR.shape[0])-1, c='grey')
-                plt.plot(np.zeros(RDR.shape[0]), c='grey')
-                plt.plot(np.zeros(RDR.shape[0])+1, c='grey')
-                plt.plot(np.zeros(RDR.shape[0])+2, c='grey')
-                plt.plot(np.zeros(RDR.shape[0])+3, c='grey')
-                plt.plot(np.zeros(RDR.shape[0])+4, c='grey')
-                plt.plot(np.zeros(RDR.shape[0])+5, c='grey')
-                plt.plot(RDR / divideGood)
-                plt.plot(  BAFplot   )
-                plt.show()
-            #quit()
 
         dividerNums.append(divideGood)
 
-        #quit()
 
         if not created1:
             divideAll = np.zeros((RDR_all.shape[0], dividerList.shape[0]))
@@ -1820,35 +1612,12 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
 
     #quit()
 
-    print ("done1")
+    #print ("done1")
 
     np.savez_compressed(divider_file, dividerNums)
     np.savez_compressed(error_file, divideError)
 
     np.savez_compressed(dividerList_file, divideAll)
-
-
-
-
-
-
-#RDR_file = './data/DLP/filtered_RDR.npz'
-#chr_File = './data/DLP/chr.npz'
-#region_file = './data/DLP/regions.npz'
-#divider_file = './data/DLP/dividers.npz'
-#error_file = './data/DLP/dividerError.npz'
-#dividerList_file = './data/DLP/dividerAll.npz'
-#BAF_file = ''
-
-
-#patientNum0 = '1'
-#RDR_file = './data/input/filtered_RDR_S' + patientNum0 + '.npz'
-#BAF_file = './data/input/filtered_BAF_S' + patientNum0 + '.npz'
-#chr_File = './data/input/chr_S' + patientNum0 + '.npz'
-#divider_file = './data/inputResults/S' + patientNum0 + '_dividers.npz'
-#error_file = './data/inputResults/S' + patientNum0 + '_dividerError.npz'
-#dividerList_file = './data/inputResults/S' + patientNum0 + '_dividerAll.npz'
-#region_file = './data/inputResults/S' + patientNum0 + '_regions.npz'
 
 
 
@@ -1871,15 +1640,6 @@ HAP_file = './data/' + folder1 + '/initial/HAP_1M.npz'
 
 
 
-
-
-#RDR = loadnpz(RDR_file)
-#mean1 = np.mean(RDR[:, 50:200], axis=1)
-#RDR = RDR / mean1.reshape((-1, 1))
-#import seaborn as sns
-#plt.plot(RDR[:10].T)
-#plt.show()
-#quit()
 
 
 def newFindDividers(bins_file, RDR_file, noise_file, BAF_file, BAF_noise_file, divider_file, error_file, dividerList_file):
@@ -2342,9 +2102,9 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, div
 
         CNAfull = np.zeros((RDR_all.shape[0], RDR_all.shape[1], 2), dtype=int)
 
-        for a in range(0, dividerNums.shape[0]):
+        for a in tqdm(range(dividerNums.shape[0])):
 
-            print (a, dividerNums.shape[0])
+            #print (a, dividerNums.shape[0])
 
             RDR = RDR_all[a]
 
@@ -2366,19 +2126,6 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, div
             CNAfull[a] = CNA
 
 
-
-            if False:
-                argAbove = np.argwhere((CNA[:, 0] + CNA[:, 1]) > 2)[:, 0]
-
-                if True:#argAbove.shape[0] > 50:
-
-                    plt.plot(RDR)
-                    plt.plot(BAF)
-                    plt.plot(CNA[:, 0] + CNA[:, 1])
-                    #plt.plot(CNA1[:, 0] + CNA1[:, 1] + 1)
-                    #plt.plot(CNA[:, 0])
-                    #plt.plot(CNA[:, 1])
-                    plt.show()
 
         return CNAfull
 
@@ -2470,11 +2217,6 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, div
 
 
 
-#folder1 = 'ACT/P1'
-#folder1 = 'DLP'
-#folder1 = '10x'
-#folder1 = 'ACT10x'
-#folder1 = 'TN3'
 
 
 RDR_file = './data/' + folder1 + '/binScale/filtered_RDR_avg.npz'
@@ -2492,17 +2234,15 @@ initialUniqueIndex_file = './data/' + folder1 + '/binScale/initialIndex.npz'
 #findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, divider_file, error_file, dividerList_file, initialCNA_file, initialUniqueCNA_file, initialUniqueIndex_file)
 #quit()
 
-#RDR = loadnpz(RDR_file)
-#CNA = loadnpz(initialCNA_file)
-#print (CNA.shape)
-#print (RDR.shape)
-#quit()
 
 
-def saveReformatCSV(outLoc):
+def saveReformatCSV(outLoc, isNaive=False):
 
-    pred1 = loadnpz(outLoc + '/model/pred_now.npz')
-    naive1 = loadnpz(outLoc + '/binScale/initialCNA.npz')
+    if isNaive:
+        pred1 = loadnpz(outLoc + '/binScale/initialCNA.npz')
+    else:
+        pred1 = loadnpz(outLoc + '/model/pred_now.npz')
+    
     goodSubset = loadnpz(outLoc + '/initial/subset.npz')
     chr1 = loadnpz(outLoc + '/initial/chr_100k.npz')
     chrAll = loadnpz(outLoc + '/initial/allChr_100k.npz')
@@ -2512,15 +2252,7 @@ def saveReformatCSV(outLoc):
     _, chrStarts = np.unique(chrAll, return_index=True)
     goodSubset = goodSubset - chrStarts[chr1]
 
-    #print (cellNames)
-    #quit()
-
     
-
-    #import matplotlib.pyplot as plt
-    #plt.plot(goodSubset)
-    #plt.savefig('./images/temp.png')
-    #quit()
 
     _, index_start = np.unique(bins, return_index=True)
     _, index_end = np.unique(bins[-1::-1], return_index=True)
@@ -2537,23 +2269,27 @@ def saveReformatCSV(outLoc):
         posIndexing.append([chrome, startPos, endPos])
         #print (posIndexing[-1]) 
 
-    dataAll = [['Cell barcode', 'Chromsome', 'Start', 'End', 'Haplotype 1', 'Haplotype 2']]
+    dataAll = [['Cell barcode', 'Chromosome', 'Start', 'End', 'Haplotype 1', 'Haplotype 2']]
 
     for a in range(pred1.shape[0]):
         for b in range(pred1.shape[1]):
             dataAll.append( [ cellNames[a], posIndexing[b][0], posIndexing[b][1], posIndexing[b][2], int(pred1[a][b][0]), int(pred1[a][b][1])  ] )
     
     dataAll = np.array(dataAll)
-    outFile = outLoc + '/finalPrediction/DeepCopyPrediction.csv'
+    if isNaive:
+        outFile = outLoc + '/finalPrediction/NaiveCopyPrediction.csv'
+    else:
+        outFile = outLoc + '/finalPrediction/DeepCopyPrediction.csv'
     np.savetxt(outFile, dataAll, delimiter=",", fmt='%s')
 
-    naiveAll = [['Cell barcode', 'Chromsome', 'Start', 'End', 'Haplotype 1', 'Haplotype 2']]
-    for a in range(naive1.shape[0]):
-        for b in range(naive1.shape[1]):
-            naiveAll.append( [ cellNames[a], posIndexing[b][0], posIndexing[b][1], posIndexing[b][2], int(naive1[a][b][0]), int(naive1[a][b][1])  ] )
-    naiveAll = np.array(naiveAll)
-    naiveFile = outLoc + '/finalPrediction/NaiveCopyPrediction.csv'
-    np.savetxt(naiveFile, naiveAll, delimiter=",", fmt='%s')
+    #naiveAll = [['Cell barcode', 'Chromosome', 'Start', 'End', 'Haplotype 1', 'Haplotype 2']]
+    #for a in range(naive1.shape[0]):
+    #    for b in range(naive1.shape[1]):
+    #        naiveAll.append( [ cellNames[a], posIndexing[b][0], posIndexing[b][1], posIndexing[b][2], int(naive1[a][b][0]), int(naive1[a][b][1])  ] )
+    #naiveAll = np.array(naiveAll)
+    #naiveFile = outLoc + '/finalPrediction/NaiveCopyPrediction.csv'
+    #np.savetxt(naiveFile, naiveAll, delimiter=",", fmt='%s')
+    True
 
 
 
@@ -2565,16 +2301,16 @@ def saveReformatCSV(outLoc):
 
 
 
+def scalorRunBins(outLoc):
 
-
-#outLoc = './data/newTN3'
-#saveReformatCSV(outLoc)
-#quit()
-
-
-
-def scalorRunAll(outLoc):
     
+    numSteps = '9'
+    stepName = 8
+
+
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Creating segements... ', end='')
 
     chr_file = outLoc + '/initial/chr_100k.npz'
     RDR_file = outLoc + '/initial/RDR_100k.npz'
@@ -2585,7 +2321,6 @@ def scalorRunAll(outLoc):
     findVariableBins(RDR_file, bins_file, chr_file, totalRead_file, doBAF, BAF_file=BAF_file)
 
     
-
     bins_file = outLoc + '/binScale/bins.npz'
     chr_file = outLoc + '/initial/chr_100k.npz'
     RDR_file = outLoc + '/initial/RDR_100k.npz'
@@ -2597,17 +2332,27 @@ def scalorRunAll(outLoc):
     BAF_file2 = outLoc + '/binScale/filtered_HAP_avg.npz'
     BAF_noise_file = outLoc + '/binScale/BAF_noise.npz'
     applyVariableBins(RDR_file, bins_file, chr_file, RDR_file2, noise_file, chr_file2, doBAF, BAF_file=BAF_file, BAF_file2=BAF_file2, BAF_noise_file=BAF_noise_file)
+    print ("Done")
 
 
 
+
+
+def runNaiveCopy(outLoc):
+    
+
+
+    print ('NaiveCopy — Step 1/3: Finding low variance regions... ')
     chr_file = outLoc + '/initial/chr_1M.npz'
     RDR_file = outLoc + '/initial/RDR_1M.npz'
     region_file = outLoc + '/binScale/regions.npz'
     HAP_file = outLoc + '/initial/HAP_1M.npz'
     findRegions(RDR_file, HAP_file, chr_file, region_file)
+    #print ('Done')
 
 
 
+    print ('NaiveCopy — Step 2/3: Finding cell specific scaling factors... ')
     RDR_file = outLoc + '/initial/RDR_1M.npz'
     chr_file = outLoc + '/initial/chr_1M.npz'
     region_file = outLoc + '/binScale/regions.npz'
@@ -2616,9 +2361,10 @@ def scalorRunAll(outLoc):
     dividerList_file = outLoc + '/binScale/dividerAll.npz'
     HAP_file = outLoc + '/initial/HAP_1M.npz'
     findDividers(RDR_file, HAP_file, chr_file, divider_file, error_file, dividerList_file, region_file)
+    #print ('Done')
 
 
-
+    print ('NaiveCopy — Step 3/3: Estimating copy number profiles... ')
     RDR_file = outLoc + '/binScale/filtered_RDR_avg.npz'
     noise_file = outLoc + '/binScale/filtered_RDR_noise.npz'
     chr_file = outLoc + '/binScale/chr_avg.npz'
@@ -2633,9 +2379,19 @@ def scalorRunAll(outLoc):
     findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, divider_file, error_file, dividerList_file, initialCNA_file, initialUniqueCNA_file, initialUniqueIndex_file)
     
 
+    saveReformatCSV(outLoc, isNaive=True)
+    print ('Done')
+
+
+def scalorRunAll(outLoc):
+    scalorRunBins(outLoc)
+    runNaiveCopy(outLoc)
 
 
 #outLoc = './data/newTN3'
 #scalorRunAll(outLoc)
 
 
+#saveReformatCSV(outLoc, isNaive=True)
+#saveReformatCSV(outLoc, isNaive=False)
+#quit()
