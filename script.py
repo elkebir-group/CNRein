@@ -3,7 +3,7 @@
 import sys
 import numpy as np
 
-from DeepCopy1_stefanivanovic99.pipeline import runEverything
+from DeepSomaticCopy.pipeline import runEverything
 
 def getValuesSYS(listIn, keyList):
     valueList = []
