@@ -2755,6 +2755,6 @@ def easyRunRL(outLoc):
 
 
 
-#outLoc = '/Users/stefanivanovic/Desktop/Coding/Bio/CNA/data/TN3copy'
+
 #easyRunRL(outLoc)
 #quit()

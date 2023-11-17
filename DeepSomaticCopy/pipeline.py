@@ -8,7 +8,7 @@ from .scaler import saveReformatCSV
 from .scaler import scalorRunBins
 from .scaler import runNaiveCopy
 from .RLCNA import easyRunRL
-
+from .shared import findTreeFromFile
 
 
 def getValuesSYS(listIn, keyList):
@@ -45,6 +45,33 @@ def scriptRunEverything():
         print ('')
         print ('Running part of pipeline: ')
         print ('DeepCopyRun -step <name of step to be ran> -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38"> ' )
+
+    elif '-tree' in listIn:
+
+        if '-chr' in listIn:
+
+            if '-hap1' in listIn:
+                keyList = ['-output', '-hap1', '-hap2', '-chr']
+                values1 = getValuesSYS(listIn, keyList)
+                outLoc, hap1File, hap2File, chrFile = values1[0], values1[1], values1[2], values1[3]
+                findTreeFromFile(outLoc, runEasy=False, fileMatrix=[hap1File, hap2File], fileChr=chrFile)
+
+            if '-hap' in listIn:
+                keyList = ['-output', '-CNA', '-chr']
+                values1 = getValuesSYS(listIn, keyList)
+                outLoc, hapFile, chrFile = values1[0], values1[1], values1[2]
+                findTreeFromFile(outLoc, runEasy=False, fileMatrix=[hapFile], fileChr=chrFile)
+
+
+
+        else:
+            
+            keyList = ['-output']
+            values1 = getValuesSYS(listIn, keyList)
+            outLoc = values1[0]
+            findTreeFromFile(outLoc)
+
+
 
 
     elif not '-step' in listIn:

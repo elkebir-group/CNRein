@@ -16,7 +16,7 @@ import pandas as pd
 #%matplotlib inline
 #%config InlineBackend.figure_format = 'svg'
 
-
+from tqdm import tqdm
 
 #from scaler import *
 #from RLCNA import *
@@ -50,6 +50,7 @@ def tweakBAF(x):
     x = (x * (1.0 - (delta * 2) ) ) + delta
 
     return x
+
 
 def easyUniqueValMaker(X):
     inverse1 = uniqueValMaker(X)
@@ -389,8 +390,8 @@ def calcDiffMatrix(predCNA, chr):
 
     distMatrix = np.zeros((predCNA.shape[0], predCNA.shape[0]), dtype=int)
 
-    for a in range(predCNA.shape[0]-1):
-        print (a)
+    for a in tqdm(range(predCNA.shape[0]-1)):
+        #print (a)
         count1_A = sizeList[a, 0]
         count1_B = sizeList[a, 1]
         pred1_A = predCNA[a, :count1_A, 0]
@@ -427,7 +428,6 @@ def calcDiffMatrix(predCNA, chr):
 def getTree(data):
 
     import dendropy
-
     from skbio import DistanceMatrix
     from skbio.tree import nj
     import sys
@@ -836,9 +836,9 @@ def runParsimony(tree1, predCNA, chr):
 
     pairList = np.array(pairList)
 
-    print (treeInternal_choice.shape)
+    #print (treeInternal_choice.shape)
     treeInternal_choice = treeInternal_choice[:, originalBool == 1]
-    print (treeInternal_choice.shape)
+    #print (treeInternal_choice.shape)
 
 
     return treeInternal_choice, cladeSizes, pairList, pairListLength, errors, treeWithLength
@@ -930,3 +930,100 @@ def simplifyClonesTree(tree1):
         #print (tree1)
         #quit()
         return tree1
+
+
+
+def findTreeFromFile(outLoc, runEasy=True, fileMatrix=[], fileChr=''):
+
+    import os
+
+    if runEasy:
+        pred1 = loadnpz(outLoc + '/model/pred_now.npz')
+        chr = loadnpz(outLoc + '/binScale/chr_avg.npz')
+
+        cellNames = loadnpz(outLoc + '/initial/cellNames.npz')
+        np.savetxt(outLoc + '/tree/cellBarcodes.txt', cellNames, fmt='%s')
+
+        #np.savetxt(outLoc + '/tree/pred_hap1.csv', pred1[:, :, 0], delimiter=',')
+        #np.savetxt(outLoc + '/tree/pred_hap2.csv', pred1[:, :, 1], delimiter=',')
+        #np.savetxt(outLoc + '/tree/chr_avg.csv', chr, delimiter=',')
+
+        #print ("Done1")
+
+        #quit()
+
+    else:
+        if '.npz' in fileChr:
+            chr = loadnpz(fileChr)
+        if '.npy' in fileChr:
+            chr = np.load(fileChr)
+        if '.csv' in fileChr:
+            chr = np.loadtxt(fileChr, dtype=str, delimiter=',').astype(float).astype(int)
+        chr = chr - np.min(chr) #starting count at zero not 1. 
+        
+        if len(fileMatrix) == 1:
+            fileMatrix = fileMatrix[0]
+            if '.npz' in fileMatrix:
+                pred1 = loadnpz(fileMatrix)
+            if '.npy' in fileMatrix:
+                pred1 = np.load(fileMatrix)
+        
+        else:
+            #String to float to int is a way of avoiding issues indpendent of the way it is stored in the csv. 
+            pred_0 = np.loadtxt(fileMatrix[0], dtype=str, delimiter=',').astype(float).astype(int)
+            pred_1 = np.loadtxt(fileMatrix[1], dtype=str, delimiter=',').astype(float).astype(int)
+            pred_0 = pred_0.reshape((pred_0.shape[0], pred_0.shape[1], 1))
+            pred_1 = pred_1.reshape((pred_1.shape[0], pred_1.shape[1], 1))
+
+            pred1 = np.concatenate((pred_0, pred_1), axis=2)
+            del pred_0
+            del pred_1
+
+    
+
+
+    
+    
+    
+    pred1[pred1>=19] = 19
+
+    print ('Tree prediction — Step 1/3: Calculating distance matrix... ')
+
+    if True:
+        distMatrix = calcDiffMatrix(pred1, chr)
+        command1 = 'mkdir ' + outLoc + '/tree'
+        os.system(command1) 
+        np.savez_compressed(outLoc + '/tree/distMatrix.npz', distMatrix)
+    else:
+        distMatrix = loadnpz(outLoc + '/tree/distMatrix.npz')
+
+    print ('Tree prediction — Step 2/3: Calculating tree... ', end='')
+    clades, tree1 = getTree(distMatrix)
+    tree1 = modifyTree(tree1)
+
+    #np.savez_compressed(outLoc + '/tree/tree.npz', np.array([tree1]))
+    np.savetxt(outLoc + '/tree/tree.txt', np.array([tree1]), fmt='%s')
+    print ("Done")
+
+
+    print ('Tree prediction — Step 3/3: Calculating edge lengths and parsimony... ', end='')
+    treeInternal_choice, cladeSizes, pairList, pairListLength, errors, treeWithLength = runParsimony(tree1, pred1, chr)
+    
+
+    #print (errors[0])
+
+    #np.savez_compressed(outLoc + '/tree/parsimony.npz', errors)
+    #np.savez_compressed(outLoc + '/tree/treeWithLength.npz', np.array([treeWithLength]))
+
+    np.savetxt(outLoc + '/tree/parsimony.txt', errors[:1].astype(int).astype(str), fmt='%s'  )
+    np.savetxt(outLoc + '/tree/treeWithLength.txt', np.array([treeWithLength]), fmt='%s')
+    print ("Done")
+
+
+
+
+
+#fileMatrix = [outLoc + '/tree/pred_hap1.csv', outLoc + '/tree/pred_hap2.csv']
+#fileChr = outLoc + '/tree/chr_avg.csv'
+#findTreeFromFile(outLoc, runEasy=False, fileMatrix=fileMatrix, fileChr=fileChr)
+#quit()
