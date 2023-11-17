@@ -1,4 +1,7 @@
 # DeepCopy
+
+[![PyPI version](https://badge.fury.io/py/corsid.svg)](https://badge.fury.io/py/corsid)
+
 DeepCopy is a deep reinforcement learning based evolution-aware algorithm for haplotype-specific copy number calling on single cell DNA sequencing data. 
 
 <p align="center">
