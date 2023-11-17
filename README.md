@@ -65,6 +65,7 @@ Here "name of step to be ran" can be any of the three sequential steps: "process
 The "processing" step utilizes BAM files as inputs, and produces segments with haplotype specific read counts and GC bais corrected read depths (stored in "binScale") as well as intermediary files (stored in "initial", "counts", "info", "phased", "phasedCounts" and "readCounts"). 
 The "NaiveCopy" step utilized the segments and read counts produced by "process" and generates NaiveCopy's predictions stored in "finalPrediction" as well as intermediate files stored in "binScale". 
 The "DeepCopy" step utilizes the outputs of both "processing" and "NaiveCopy", and produces predictions in "finalPrediction", as well as the neural network model stored in "model". 
+
 The "NaiveCopy" and "DeepCopy" steps do not require bcftools, samtools or SHAPE-IT. 
 Instead, they only require python package dependencies that are automatically installed when installing DeepCopy through pip. 
 The steps "NaiveCopy" and "DeepCopy" only require the "-output" argument, and not "-ref", "refGenome", or "-input" (it is assumed that the correct data for these steps is already in the "-output" folder). 
