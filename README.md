@@ -1,6 +1,6 @@
 # DeepCopy
 
-[![PyPI version](https://pypi.org/project/DeepSomaticCopy/)](https://pypi.org/project/DeepSomaticCopy/)
+[![PyPI version](https://badge.fury.io/py/DeepSomaticCopy.svg)](https://badge.fury.io/py/DeepSomaticCopy)
 
 DeepCopy is a deep reinforcement learning based evolution-aware algorithm for haplotype-specific copy number calling on single cell DNA sequencing data. 
 
