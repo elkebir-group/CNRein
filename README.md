@@ -42,7 +42,10 @@ This automatically installs numpy, pandas, pysam, statsmodels, and pytorch. Howe
 
 If installed manually, the default usage is 
 ```bash
-python script.py -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
+python script.py -input <BAM file location> \
+    -ref <reference folder location> \
+    -output <location to store results> \
+    -refGenome <either "hg19" or "hg38">
 ```
 An example usage could be as below
 ```bash
