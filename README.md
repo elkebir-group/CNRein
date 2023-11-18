@@ -56,11 +56,17 @@ python script.py -input ./data/TN3_FullMerge.bam -ref ./data/refNew -output ./da
 
 DeepCopy can be ran with the following command:
 ```bash
-DeepCopyRun -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
+DeepCopyRun -input <BAM file location> \
+    -ref <reference folder location> \
+    -output <location to store results> \
+    -refGenome <either "hg19" or "hg38">
 ```
 An example command could be:
 ```bash
-DeepCopyRun -input ./data/TN3_FullMerge.bam -ref ./data/refNew -output ./data/newTN3 -refGenome hg38
+DeepCopyRun -input ./data/TN3_FullMerge.bam \
+    -ref ./data/refNew \
+    -output ./data/newTN3 \
+    -refGenome hg38
 ```
 
 Additionally, one can run only parts of the DeepCopy pipeline with the following command:
