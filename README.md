@@ -71,7 +71,11 @@ DeepCopyRun -input ./data/TN3_FullMerge.bam \
 
 Additionally, one can run only parts of the DeepCopy pipeline with the following command:
 ```bash
-DeepCopyRun -step <name of step to be ran> -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38">
+DeepCopyRun -step <name of step to be ran> \
+    -input <BAM file location> \
+    -ref <reference folder location> \
+    -output <location to store results> \
+    -refGenome <either "hg19" or "hg38">
 ```
 Here "name of step to be ran" can be any of the three sequential steps: "processing" for data processing steps, "NaiveCopy" for additional NaiveCopy steps or "DeepCopy" for the final deep reinforcement learning step. 
 The "processing" step utilizes BAM files as inputs, and produces segments with haplotype specific read counts and GC bais corrected read depths (stored in "binScale") as well as intermediary files (stored in "initial", "counts", "info", "phased", "phasedCounts" and "readCounts"). 
@@ -116,7 +120,10 @@ Bins/segments can be of any size including variable bin sizes (ZCNT distances do
 Additionally, a CSV file consisting of a list of integer chromosome numbers for each bin must be provided (if the X chromosome is included, label it chromosome 23).
 Given these inputs, tree estimation can be run with the below command. 
 ```bash
-DeepCopyRun -tree -output <location to store results> -hap1 <haplotype 1 copy numbers> -hap2 <haplotype 2 copy numbers> -chr <chromsome numbers>
+DeepCopyRun -tree -output <location to store results> \
+    -hap1 <haplotype 1 copy numbers> \
+    -hap2 <haplotype 2 copy numbers> \
+    -chr <chromsome numbers>
 ```
 
 
