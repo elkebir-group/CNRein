@@ -85,14 +85,17 @@ In terms of the precise files, we have the following.
 
 #### Processing step
 Inputs: "-input" BAM file
+
 Outputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", and "filtered_RDR_noise.npz". Additionally all files in ./counts, ./info, ./phased, ./phasedCounts ./readCounts, and ./initial. 
 
 #### NaiveCopy step
 Inputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", and "filtered_RDR_noise.npz". In ./initial the files chr_1M.npz, RDR_1M.npz, and HAP_1M.npz.
+
 Outputs: In ./binScale the files "dividerAll.npz", "dividerError.npz", "dividers.npz", "initialCNA.npz", "initialIndex.npz", "initialUniqueCNA.npz" and "regions.npz". Additionally, "./finalPrediciton/NaiveCopyPrediction.csv". 
 
 #### DeepCopy step
 Inputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", "filtered_RDR_noise.npz", and "initialUniqueCNA.npz". 
+
 Outputs: In ./model the files "model_now.pt", and "pred_now.npz". Additionally, "./finalPrediciton/DeepCopyPrediction.csv". 
 
 
