@@ -81,6 +81,20 @@ Here "name of step to be ran" can be any of the three sequential steps: "process
 The "processing" step utilizes BAM files as inputs, and produces segments with haplotype specific read counts and GC bais corrected read depths (stored in "binScale") as well as intermediary files (stored in "initial", "counts", "info", "phased", "phasedCounts" and "readCounts"). 
 The "NaiveCopy" step utilized the segments and read counts produced by "process" and generates NaiveCopy's predictions stored in "finalPrediction" as well as intermediate files stored in "binScale". 
 The "DeepCopy" step utilizes the outputs of both "processing" and "NaiveCopy", and produces predictions in "finalPrediction", as well as the neural network model stored in "model". 
+In terms of the precise files, we have the following. 
+
+#### Processing step
+Inputs: "-input" BAM file
+Outputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", and "filtered_RDR_noise.npz". Additionally all files in ./counts, ./info, ./phased, ./phasedCounts ./readCounts, and ./initial. 
+
+#### NaiveCopy step
+Inputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", and "filtered_RDR_noise.npz". In ./initial the files chr_1M.npz, RDR_1M.npz, and HAP_1M.npz.
+Outputs: In ./binScale the files "dividerAll.npz", "dividerError.npz", "dividers.npz", "initialCNA.npz", "initialIndex.npz", "initialUniqueCNA.npz" and "regions.npz". Additionally, "./finalPrediciton/NaiveCopyPrediction.csv". 
+
+#### DeepCopy step
+Inputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", "filtered_RDR_noise.npz", and "initialUniqueCNA.npz". 
+Outputs: In ./model the files "model_now.pt", and "pred_now.npz". Additionally, "./finalPrediciton/DeepCopyPrediction.csv". 
+
 
 The "NaiveCopy" and "DeepCopy" steps do not require bcftools, samtools or SHAPE-IT. 
 Instead, they only require python package dependencies that are automatically installed when installing DeepCopy through pip. 
