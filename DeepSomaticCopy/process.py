@@ -299,6 +299,9 @@ def cellDoSmallBinning(read_folder, hist_file, chr_file, uniqueCell_file):
     dict = {}
 
     for a0 in range(22):
+        
+        #print (a0)
+
         a1 = a0 + 1
         read_folder2 = read_folder + '/' + str(a1)
 
@@ -306,6 +309,9 @@ def cellDoSmallBinning(read_folder, hist_file, chr_file, uniqueCell_file):
 
         if a0 == 0:
             fnames = os.listdir(read_folder2)
+
+            if '.DS_Store' in fnames:
+                fnames.remove('.DS_Store')
 
             Ncell = len(fnames)
             for b in range(len(fnames)):
@@ -325,7 +331,7 @@ def cellDoSmallBinning(read_folder, hist_file, chr_file, uniqueCell_file):
         max1 = 0
         for b in range(len(fnames)):
             fname2 = read_folder2 + '/' + fnames[b]
-
+            #print (fname2)
             data = loadnpz(fname2)
             if np.max(data) > max1:
                 max1 = np.max(data)
@@ -414,6 +420,9 @@ def doHapSmallBinning(name_file, uniqueCell_file, nameOld_folder, hap_folder, ch
 
     fnames = loadnpz(uniqueCell_file)
 
+    #print (fnames[:10])
+    #quit()
+
 
     #cellNames = np.loadtxt(nameOld_folder, dtype=str)
     #for a in range(cellNames.shape[0]):
@@ -465,6 +474,11 @@ def doHapSmallBinning(name_file, uniqueCell_file, nameOld_folder, hap_folder, ch
 
         hapCounts = loadnpz(hap_file)
         positions = loadnpz(position_file)
+        
+        print ('shape')
+        print (chrA)
+        print (hapCounts.shape)
+        print (positions.shape)
 
 
         indexStart = index[chrA]
@@ -522,176 +536,361 @@ uniqueCell_file = './data/' + folder1 + '/initial/cellNames.npz'
 
 
 
+def saveMappability():
+
+    type1 = 'hg19'
 
 
+    mapSum = np.zeros((22, 300000, 2))
+    #countSum = np.zeros((22, 3000))
+
+    if type1 == 'hg19':
+        fileName1 = './data/ref/map/hg19/k100.umap.wg'
+    else:
+        fileName1 = './data/ref/map/hg38/k100.umap.wg'
 
 
-def findGCadjustment(refGenome, refLoc, hist_file, adjustment_file, chr_file, lowHapDoImbalance, rawHAP_file, hapHist_file,  chr_file2, goodSubset_file, RDR_file, totalRead_file):
+    file1 = open(fileName1, 'r')
+    count = 0
 
-
-
-    M = 100000
-
-    chr = loadnpz(chr_file)
-    #chr_diff = np.argwhere((chr[1:] - chr[:-1]) != 0)[:, 0]
-    #chr_diff = chr_diff + 1
-    #chr_diff = np.concatenate((chr_diff))
-
-
-    #print (chr.shape)
-
-
-
-
-    data = loadnpz(hist_file)
-
-
-    totalRead = np.sum(data, axis=1)
-    np.savez_compressed(totalRead_file, totalRead)
-    #quit()
+    pos0, pos1 = 0, 0
     
+    while True:
+        count += 1
+    
+        # Get next line from file
+        line = file1.readline()
+        M = 100000
+        #if count >= M - 1000:
+        #    print ([line])
+        #    if count > M:
+        #        quit()
+        
+        M = 1000000
+        if count % M == 0:
+            print (count // M)
 
+        if 'fixedStep' in line:
+            line = line.split(' ')
 
+            #print (pos1 - pos0)
+            #print (line)
 
+            chr1 = line[1]
+            chr1 = chr1.split('=')[1].split('chr')[1]
 
-    sum1 = np.sum(data, axis=0)
+            if chr1 not in ['X', 'Y']:
+                chr1 = int(chr1) - 1
+            #print (chr1)
 
+            pos1 = line[2]
+            pos1 = pos1.split('=')[1]
+            pos1 = int(pos1)
 
-    #sum2 = np.sum(data, axis=1)
-    #plt.plot(sum1)
-    #plt.show()
+            pos0 = pos1
+
+        else:
+            if chr1 not in ['X', 'Y']:
+                map1 = line.replace('\n', '')
+                map1 = float(map1)
+                #print (line)
+
+                pos_round = pos1 // 1000
+
+                mapSum[chr1, pos_round, 0] += map1
+                mapSum[chr1, pos_round, 1] += 1
+
+                pos1 += 1
+
+        if not line:
+            if type1 == 'hg19':
+                np.savez_compressed('./data/ref/map/hg19_k100_len_1k.npz', mapSum )
+            else:
+                np.savez_compressed('./data/ref/map/hg38_k100_len_1k.npz', mapSum )
+            break
+
+#saveMappability()
+#quit()
+        
+def scaleMappability():
+
+    type1 = 'hg19'
+    if type1 == 'hg19':
+        mapSum = loadnpz('./data/ref/map/hg19_k100_len_1k.npz')
+    else:
+        mapSum = loadnpz('./data/ref/map/hg38_k100_len_1k.npz')
+    mapSum = mapSum / 1000
+    #mapSum = mapSum[:, :, 0] / (mapSum[:, :, 1] + 1e-5)
+    mapSum = mapSum[:, :, 0]
+    #print (np.mean(mapSum))
+
     #quit()
+    #
+
+    mapSum = mapSum.reshape(( mapSum.shape[0], mapSum.shape[1] // 100 , 100 ))
+    mapSum = np.mean(mapSum, axis=2)
+
+    #print (mapSum.shape)
+
+    if type1 == 'hg19':
+        np.savez_compressed('./data/ref/map/hg19_k100_len_100k.npz', mapSum )
+    else:
+        np.savez_compressed('./data/ref/map/hg38_k100_len_100k.npz', mapSum )
 
 
-    #plt.plot(sum1[chr == 1])
-    #plt.show()
-    #quit()
 
+#scaleMappability()
+#quit()
+        
 
+def saveGC():
 
+    refLoc = './data/ref'
 
-    sum1_sort = np.sort(sum1)
-    removeTop = sum1_sort[:-sum1_sort.shape[0] // 100]
-    mean1 = np.mean(removeTop)
-    std1 = np.mean( (removeTop - mean1) ** 2 ) ** 0.5
-    cutoff = mean1 + (std1 * 3.0)#(std1 * 10.0)
-
-    argGood = np.argwhere(sum1 < cutoff)[:, 0]
-    #argGood = argGood[sum1[argGood] > 10]
-    argGood = argGood[sum1[argGood] > 100] #since 100k not 10k
-
-
-    #plt.plot(sum1[argGood])
-    #plt.show()
-    #quit()
+    refGenome = 'hg19'
 
     if refGenome == 'hg38':
-        #df_gc = pd.read_csv("./data/gc/hg38_1.gc.bed", sep='\t', low_memory=False)
-        df_gc = pd.read_csv(refLoc + "/hg38_1.gc.bed", sep='\t', low_memory=False)
+        df_gc = pd.read_csv(refLoc + "/gc/hg38_1.gc.bed", sep='\t', low_memory=False)
         
     else:
-        #df_gc = pd.read_csv("./data/gc/b37_1.gc.bed", sep='\t', low_memory=False)
-        df_gc = pd.read_csv(refLoc + "/b37_1.gc.bed", sep='\t', low_memory=False)
+        df_gc = pd.read_csv(refLoc + "/gc/b37_1.gc.bed", sep='\t', low_memory=False)
 
 
     
     chr_name = df_gc['#1_usercol'].to_numpy()
     gc_num_initial = df_gc['5_pct_gc'].to_numpy()
-    pos_end = df_gc['3_usercol'].to_numpy()
-
-    #print (chr_name)
-    #quit()
-
-    #print (gc_num_initial.shape)
-    #print (data.shape)
-    #quit()
-
-    #if True:
-    #    gc_num_initial = gc_num_initial[:(gc_num_initial.shape[0]//10)*10]
-    #    gc_num_initial = gc_num_initial.reshape((gc_num_initial.shape[0]//10, 10))
-    #    gc_num_initial = np.mean(gc_num_initial, axis=1)
-    #    chr_name = chr_name[0::10][:gc_num_initial.shape[0]]
-    #    pos_end = pos_end[0::10][:gc_num_initial.shape[0]]
+    #pos_end = df_gc['3_usercol'].to_numpy()
 
 
+    gc_val = np.zeros((22, 3000))
 
-    gc_num = np.zeros(data.shape[1])
-    #map_num = np.zeros(data.shape[1])
+    M2 = 100
 
-    #dataMap = loadnpz('./data/DLP/initial/originalMappability.npz')
-
-
-    #print (gc_num.shape)
-    #print (chr.shape)
-    #print (data.shape)
-    #quit()
-    #print (np.unique(chr, return_counts=True))
-    #print (np.unique(dataMap[:, 0], return_counts=True))
-
-    #for a in range(22):
-    #    a1 = str(a+1)
-    #    gc_num_chr = gc_num_initial[chr_name==a1]
-    #    print (a1, gc_num_chr.shape[0] // 1000)
-    #quit()
-
-    M2 = M // 1000
 
     for a in range(22):
+
         a1 = str(a+1)
         if refGenome == 'hg38':
             a1 = 'chr' + a1
 
-        args1 = np.argwhere(chr == int(a))[:, 0]
-
-        #print (args1.shape)
-        #quit()
         gc_num_chr = gc_num_initial[chr_name==a1]
-        
-        #print (gc_num_chr.shape)
-        #quit()
-
-        #print (args1.shape, gc_num_chr.shape)
 
         gc_num_chr = gc_num_chr[:M2*(gc_num_chr.shape[0] // M2)]
         gc_num_chr = gc_num_chr.reshape((gc_num_chr.shape[0] // M2, M2))
         gc_num_chr = np.mean(gc_num_chr, axis=1)
 
 
-        #print (gc_num_chr.shape, args1.shape)
-        #print (args1.shape)
-        #quit()
+        gc_val[a, :gc_num_chr.shape[0]] = gc_num_chr
+
+    
 
 
-        #map_chr = dataMap[dataMap[:, 0].astype(int) == int(a1), 1]
-        #print (map_chr.shape)
+    if refGenome == 'hg38':
+        np.savez_compressed('./data/ref/gc/hg38_len_100k.npz', gc_val )
+        
+    else:
+        np.savez_compressed('./data/ref/gc/hg19_len_100k.npz', gc_val )
+    
+        
 
-        if True:
-            gc_num[args1] = np.copy(gc_num_chr[:args1.shape[0]])
-        #map_num[args1] = np.copy(map_chr[:args1.shape[0]])
+#saveGC()
+#quit()
+
+
+def gcMapSubset(refGenome, refLoc, chr_file, hist_file, rawHAP_file, goodSubset_file, chr_file2, hapHist_file, bias_file, totalRead_file, lowHapDoImbalance):
+
+
+    
+
+
+    if refGenome == 'hg19':
+        mapSum = loadnpz(refLoc + '/map/hg19_k100_len_100k.npz')
+        gc_val = loadnpz(refLoc + '/gc/hg19_len_100k.npz')
+    else:
+        mapSum = loadnpz(refLoc + '/map/hg38_k100_len_100k.npz')
+        gc_val = loadnpz(refLoc + '/gc/hg38_len_100k.npz')
+
+
+    chr = loadnpz(chr_file)
+    data = loadnpz(hist_file)
+    sum1 = np.sum(data, axis=0)
+
+    totalRead = np.sum(data, axis=1)
+    np.savez_compressed(totalRead_file, totalRead)
+
+    #import matplotlib.pyplot as plt
+
+    #perm1 = np.random.permutation(data.shape[0])[:20]
+    #plt.plot(data[perm1])
+    #plt.show()
+    #quit()
+
+    goodBool = np.zeros(chr.shape[0], dtype=int)
+
+    bias = np.zeros((chr.shape[0], 2))
+
+    for a in range(22):
+        args1 = np.argwhere(chr == a)[:, 0]
+        map1 = mapSum[a][:args1.shape[0]]
+        gc1 = gc_val[a][:args1.shape[0]]
+
+        bias[args1, 0] = map1
+        bias[args1, 1] = gc1
+
+        #plt.plot(map1)
+        #plt.show()
+
+        
+        args2 = args1[map1 > 0.8]
+        goodBool[args2] = 1
+
+
+    #print (np.argwhere(goodBool == 0).shape)
+
+
+    argGood = np.argwhere(goodBool == 1)[:, 0]
+
+
+
+    sum1 = sum1[argGood]
+
+    #import matplotlib.pyplot as plt
+
+    
+
+    sum1_sort = np.sort(sum1)
+    removeTop = sum1_sort[:-sum1_sort.shape[0] // 100]
+    mean1 = np.mean(removeTop)
+    std1 = np.mean( (removeTop - mean1) ** 2 ) ** 0.5
+    cutoff = mean1 + (std1 * 6.0)#(std1 * 10.0)
+
+    #print (sum1[sum1 < cutoff].shape[0] / sum1.shape[0])
+
+    #print (cutoff / 1000000)
+    #plt.hist(sum1, bins=100)
+    #plt.show()
+
+    argGood = argGood[sum1 <= cutoff]
+
+
+
+    hapAll = loadnpz(rawHAP_file)
+    hapAll = hapAll[:, argGood]
+
+    if lowHapDoImbalance:
+        HAPsum = np.mean(hapAll.astype(float), axis=(0, 2)) * 2
+
+        mean1 = np.mean(HAPsum)
+        mean1_adj = mean1 / 10.0
+
+        hapAll[:, HAPsum < mean1_adj, 0] = hapAll[:, HAPsum < mean1_adj, 0] + 5
+
+
+    np.savez_compressed(hapHist_file, hapAll)
+
+
+
+
+
+    np.savez_compressed(goodSubset_file, argGood)
+    chr = chr[argGood]
+    np.savez_compressed(chr_file2, chr)
+
+    bias = bias[argGood]
+    np.savez_compressed(bias_file, bias)
+
+
 
     
 
 
 
-    gc_num = gc_num[argGood]
-    #map_num = map_num[argGood]
+outLoc = './data/10x'
+refGenome = 'hg38'
+refLoc = './data/ref'
+
+hist_file = outLoc + '/initial/allHistBam_100k.npz'
+rawHAP_file = outLoc + '/initial/allRawHAP_100k.npz' 
+chr_file = outLoc + '/initial/allChr_100k.npz' 
+goodSubset_file = outLoc + '/initial/subset.npz'
+chr_file2 = outLoc + '/initial/chr_100k.npz'
+hapHist_file = outLoc + '/initial/HAP_100k.npz'
+lowHapDoImbalance = False
+
+
+#gcMapSubset(refGenome, refLoc, chr_file, hist_file, rawHAP_file, goodSubset_file, chr_file2, hapHist_file)
+#quit()
+
+
+
+
+def applyMapAdjustment(refGenome, refLoc, chr_file, hist_file, totalRead_file):
+
+    if refGenome == 'hg38':
+        map1 = loadnpz('./data/gc/map/hg38_k100_len_100k.npz')
+    chr = loadnpz(chr_file)
+    data = loadnpz(hist_file)
+
+    sum1 = np.mean(data, axis=0)
+
+
+
+    
+
+    import matplotlib.pyplot as plt
+    import scipy
+
+
+
+    for a in range(22):
+        args1 = np.argwhere(chr == a)[:, 0]
+
+        map2 = map1[a][:args1.shape[0]]
+
+        sum2 = sum1[args1]
+
+        argHigh = np.argwhere(map2 >= 0.8)[:, 0]
+
+
+        print (scipy.stats.pearsonr( map2[argHigh],  sum2[argHigh] ))
+
+        plt.scatter(map2[argHigh],  sum2[argHigh] )
+        plt.show()
+
+        plt.plot(  sum2[argHigh] / np.mean( sum2[argHigh] ))
+        plt.plot(map2[argHigh] )
+        plt.ylim(-0.05, 2)
+        plt.show()
+        
+
+
+
+
+
+
+
+
+
+
+
+
+def findGCadjustment(hist_file, bias_file, goodSubset_file, RDR_file):
+
+
+
+
+    data = loadnpz(hist_file).astype(float)
+    argGood = loadnpz(goodSubset_file)
     data = data[:, argGood]
-    sum1 = sum1[argGood]
-    chr = chr[argGood]
+
+    bias = loadnpz(bias_file)
 
 
 
-    argGood2 = np.argwhere(gc_num > 0.01)[:, 0]
-    gc_num = gc_num[argGood2]
-    data = data[:, argGood2]
-    sum1 = sum1[argGood2]
-    chr = chr[argGood2]
-    #map_num = map_num[argGood2]
+    sum1 = np.sum(data, axis=0)
 
-
-    np.savez_compressed(goodSubset_file, argGood[argGood2])
-    np.savez_compressed(chr_file2, chr)
-
+    map1 = bias[:, 0] 
+    gc1 = bias[:, 1]
 
     def adjust_lowess(x, y, f=.5):
         jlow = sm.nonparametric.lowess(np.log(y), x, frac=f)
@@ -699,47 +898,47 @@ def findGCadjustment(refGenome, refLoc, hist_file, adjustment_file, chr_file, lo
         return np.log(y)-jz, jz
 
 
-    
+    if True:
 
-    # _, dist_gc = adjust_lowess(gc_num, sum1+1, f=0.05)# +0.01)
-    _, dist_gc = adjust_lowess(gc_num, sum1+1, f=0.2)# +0.01) #Updates 0.05 to 0.1 due to 100k
+        print ("T")
+        print (map1.shape, sum1.shape)
 
-    if False:
-        import matplotlib.pyplot as plt
-        plt.scatter(gc_num[0::100], np.log(sum1+1)[0::100])
-        plt.scatter(gc_num[0::100], dist_gc[0::100])
+        _, dist_map = adjust_lowess(map1, sum1+1, f=0.5)
+        dist_map = np.exp(dist_map) + 1
+
+        #import matplotlib.pyplot as plt
+        #plt.plot(dist_map)
         #plt.show()
-        plt.savefig('./images/temp.png')
+
+        data = data / dist_map.reshape((1, -1))
+
+        
+        
+    
+        for cellIndex in range(data.shape[0]):
+
+            print (cellIndex, data.shape[0])
+
+            
+
+            _, dist_gc = adjust_lowess(gc1, data[cellIndex]+1, f=0.5)
+            dist_gc = np.exp(dist_gc) + 1
+
+            #plt.plot(dist_gc)
+            #plt.show()
+
+            data[cellIndex] = data[cellIndex] / dist_gc
+
+        
+        #quit()
+
+        mean1 = np.mean(data, axis=1)
+        data = data / mean1.reshape((-1, 1))
+
+        np.savez_compressed(RDR_file, data)
 
 
-
-
-    dist_gc = np.exp(dist_gc) + 1
-
-    np.savez_compressed(adjustment_file, dist_gc)
-
-
-    data = data / dist_gc.reshape((1, -1))
-    mean1 = np.mean(data, axis=1)
-    data = data / mean1.reshape((-1, 1))
-
-    np.savez_compressed(RDR_file, data)
-
-
-    hapAll = loadnpz(rawHAP_file)
-
-    hapAll = hapAll[:, argGood[argGood2]]
-
-    if lowHapDoImbalance:
-        HAPsum = np.mean(hapAll.astype(float), axis=(0, 2)) * 2
-        HAPsum_log = np.log(HAPsum + 1e-8)
-
-        hapAll[:, HAPsum_log < 0, 0] = hapAll[:, HAPsum_log < 0, 0] + 5
-
-
-    np.savez_compressed(hapHist_file, hapAll)
-
-
+    
 
 
 
@@ -760,13 +959,13 @@ chr_file2 = './data/' + folder1 + '/initial/chr_100k.npz'
 hapHist_file = './data/' + folder1 + '/initial/HAP_100k.npz'
 totalRead_file = './data/' + folder1 + '/initial/totalReads.npz'
 
-useHG38 = True
-if folder1 == 'DLP':
-    useHG38 = False
-
-lowHapDoImbalance = False
-if folder1 == 'DLP':
-    lowHapDoImbalance = True
+#useHG38 = True
+#if folder1 == 'DLP':
+#    useHG38 = False
+#
+#lowHapDoImbalance = False
+#if folder1 == 'DLP':
+#    lowHapDoImbalance = True
 
 #findGCadjustment(useHG38, hist_file, adjustment_file, chr_file, lowHapDoImbalance, rawHAP_file, hapHist_file,  chr_file2, goodSubset_file, RDR_file, totalRead_file)
 #quit()
@@ -775,14 +974,15 @@ if folder1 == 'DLP':
 
 
 
-def saveRDR(RDR_file, adjustment_file, chr_file, goodSubset_file, chr_file_2, RDR_file_2, cellGood_file, doBAF, hapHist_file='', BAF_file_2=''):
+
+def saveRDR(RDR_file, chr_file, chr_file_2, RDR_file_2, cellGood_file, doBAF, hapHist_file='', BAF_file_2=''):
 
     data = loadnpz(RDR_file)
     if doBAF:
         hapData = loadnpz(hapHist_file)
     chr = loadnpz(chr_file)
-    adjustment = loadnpz(adjustment_file)
-    argGood = loadnpz(goodSubset_file)
+    #adjustment = loadnpz(adjustment_file)
+    #argGood = loadnpz(goodSubset_file)
 
     
     N = 10
@@ -920,9 +1120,18 @@ def saveRDR(RDR_file, adjustment_file, chr_file, goodSubset_file, chr_file_2, RD
 
 
 
-
-
-
+'''
+ar = np.loadtxt('./data/ACT10x/phasedCounts/bamsList.txt', dtype=str)
+for a in range(ar.shape[0]):
+    ar[a] = ar[a].split('/')[-1].split('.')[0]
+    if 'mod' in ar[a]:
+        ar[a] = ar[a].split('_mod')[0]
+print (ar)
+#quit()
+for a in range(1, 23):
+    np.savez_compressed('./data/ACT10x/phasedCounts/barcodes_chr' + str(a) + '.npz', ar)
+quit()
+'''
 
 
 #folder1 = 'DLP'
@@ -944,7 +1153,7 @@ doBAF = True
 
 
 
-def runProcessFull(outLoc, refLoc, refGenome):
+def runProcessFull(outLoc, refLoc, refGenome, lowHapDoImbalance=True):
 
     numSteps = '9'
     stepName = 6
@@ -952,15 +1161,15 @@ def runProcessFull(outLoc, refLoc, refGenome):
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
-    print ('Data processing — Step ' + stepString + ': Creating bins... ', end='')
+    print ('Data processing — Step ' + stepString + ': Creating bins... ')#, end='')
     read_folder = outLoc + '/readCounts/pos'
-    name_folder = outLoc + '/readCounts/cell'
+    #name_folder = outLoc + '/readCounts/cell'
     hist_file = outLoc + '/initial/allHistBam_100k.npz' #originaly 10k
     chr_file = outLoc + '/initial/allChr_100k.npz' #originaly 10k
     uniqueCell_file = outLoc + '/initial/cellNames.npz'
     cellDoSmallBinning(read_folder, hist_file, chr_file, uniqueCell_file)
 
-
+    #quit()
 
 
     read_folder = outLoc + '/readCounts/pos'
@@ -972,53 +1181,119 @@ def runProcessFull(outLoc, refLoc, refGenome):
     rawHAP_file = outLoc + '/initial/allRawHAP_100k.npz'
     uniqueCell_file = outLoc + '/initial/cellNames.npz'
     doHapSmallBinning(name_file, uniqueCell_file, nameOld_folder, hap_folder, chr_file, rawHAP_file)
-    print ('Done')
 
 
 
-    hist_file = outLoc + '/initial/allHistBam_100k.npz' #used to be 10k
+
+
+    hist_file = outLoc + '/initial/allHistBam_100k.npz'
     rawHAP_file = outLoc + '/initial/allRawHAP_100k.npz' 
-    chr_file = outLoc + '/initial/allChr_100k.npz' #used to be 10k
-    adjustment_file = outLoc + '/initial/gc_adjustment.npz'
+    chr_file = outLoc + '/initial/allChr_100k.npz' 
     goodSubset_file = outLoc + '/initial/subset.npz'
-    RDR_file = outLoc + '/initial/RDR_100k.npz'
     chr_file2 = outLoc + '/initial/chr_100k.npz'
     hapHist_file = outLoc + '/initial/HAP_100k.npz'
+    bias_file = outLoc + '/initial/bias.npz'
     totalRead_file = outLoc + '/initial/totalReads.npz'
-    #useHG38 = True
-    #if folder1 == 'DLP':
-    #    useHG38 = False
-    lowHapDoImbalance = True
-    #if folder1 == 'DLP':
-    #    lowHapDoImbalance = True
+    #lowHapDoImbalance = True
+    gcMapSubset(refGenome, refLoc, chr_file, hist_file, rawHAP_file, goodSubset_file, chr_file2, hapHist_file, bias_file, totalRead_file, lowHapDoImbalance)
+    #quit()
+
+
+
+    hist_file = outLoc + '/initial/allHistBam_100k.npz'
+    bias_file = outLoc + '/initial/bias.npz'
+    goodSubset_file = outLoc + '/initial/subset.npz'
+    RDR_file = outLoc + '/initial/RDR_100k.npz'
+    
+    
+    
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
-    print ('Data processing — Step ' + stepString + ': GC bias correction... ', end='')
-
-    findGCadjustment(refGenome, refLoc, hist_file, adjustment_file, chr_file, lowHapDoImbalance, rawHAP_file, hapHist_file,  chr_file2, goodSubset_file, RDR_file, totalRead_file)
+    print ('Data processing — Step ' + stepString + ': GC bias correction... ')#, end='')
+    findGCadjustment(hist_file, bias_file, goodSubset_file, RDR_file)
+    #quit()
 
 
     
     hapHist_file = outLoc + '/initial/HAP_100k.npz' #used to be 10k
     RDR_file = outLoc + '/initial/RDR_100k.npz' #used to be 10k
     chr_file = outLoc + '/initial/chr_100k.npz'
-    adjustment_file = outLoc + '/initial/gc_adjustment.npz'
-    goodSubset_file = outLoc + '/initial/subset.npz'
+    #adjustment_file = outLoc + '/initial/gc_adjustment.npz'
+    #goodSubset_file = outLoc + '/initial/subset.npz'
     chr_file_2 = outLoc + '/initial/chr_1M.npz'
     RDR_file_2 = outLoc + '/initial/RDR_1M.npz'
     BAF_file_2 = outLoc + '/initial/HAP_1M.npz'
     cellGood_file = outLoc + '/initial/cellGood.npz'
     doBAF = True
-    saveRDR(RDR_file, adjustment_file, chr_file, goodSubset_file, chr_file_2, RDR_file_2, cellGood_file, doBAF, hapHist_file=hapHist_file, BAF_file_2=BAF_file_2)
+    saveRDR(RDR_file, chr_file, chr_file_2, RDR_file_2, cellGood_file, doBAF, hapHist_file=hapHist_file, BAF_file_2=BAF_file_2)
     print ('Done')
 
 
-refLoc = './data/refNew'
-outLoc = './data/newTN3'
-refGenome = 'hg38'
-#runProcessFull(outLoc, refLoc, refGenome)
+#refLoc = './data/refNew'
+#outLoc = './data/newTN3'
+    
+refLoc = './data/ref'
+#outLoc = './data/ACT_P1'
+#refGenome = 'hg19'
 
+#outLoc = './data/10x'
+#outLoc = './data/ACT/P3'
+outLoc = './data/ACT_hg38/P3'
+#outLoc = './data/DLP'
+#outLoc = './data/TN3'
+#outLoc = './data/ACT10x'
+refGenome = 'hg38'
+#refGenome = 'hg19'
+
+#lowHapDoImbalance = True
+#lowHapDoImbalance = False
+
+
+
+
+
+#runProcessFull(outLoc, refLoc, refGenome, lowHapDoImbalance)
+#quit()
+
+
+
+
+def rebin(data, M, doPytorch=False):
+
+    if len(data.shape) == 1:
+        #M = 10
+        N = data.shape[0] // M
+        data = data[:(N*M)]
+        data = data.reshape( (N, M) )
+        if doPytorch:
+            data = torch.mean(data, axis=1)
+        else:
+            data = np.mean(data, axis=1)
+        return data
+
+    if len(data.shape) == 2:
+        #M = 10
+        N = data.shape[1] // M
+        data = data[:, :(N*M)]
+        data = data.reshape( (data.shape[0], N, M) )
+        if doPytorch:
+            data = torch.mean(data, axis=2)
+        else:
+            data = np.mean(data, axis=2)
+        return data
+    
+    if len(data.shape) == 3:
+        #M = 10
+        N = data.shape[1] // M
+        data = data[:, :(N*M)]
+        data = data.reshape( (data.shape[0], N, M, data.shape[2]) )
+        if doPytorch:
+            data = torch.mean(data, axis=2)
+        else:
+            data = np.mean(data, axis=2)
+        return data
+    
 
 
 

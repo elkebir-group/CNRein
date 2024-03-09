@@ -1128,7 +1128,8 @@ def groupedEvidenceSVD(outLoc, chrNum):
     
 
     #momentum1 = 0.2
-    momentum1 = 0.5
+    #momentum1 = 0.5
+    momentum1 = 0.9 #Dec 26 2023
     evidence3 = np.copy(evidence2)
     
     for a in range(1, evidence3.shape[0]):
@@ -1178,6 +1179,7 @@ def runAllGroupedEvidenceSVD(outLoc):
 
 
 
+
 def findReadCounts(bamLoc, outLoc):
 
     tagName = 'RG'
@@ -1211,22 +1213,27 @@ def findReadCounts(bamLoc, outLoc):
         a = 0
         for read in samfile.fetch(chrNameLoad):
             a += 1
-            #if (a % 10000000) == 0:
-            #    print (a)
-
-            cellName = read.get_tag(tagName)
-
-            N = int(1e6)
-            if not cellName in dictCounts:
-                dictCounts[cellName] = 0
-                dictArray[cellName] = np.zeros(N, dtype=int)
-
-            if dictCounts[cellName] >= dictArray[cellName].shape[0]:
-                dictArray[cellName] = np.concatenate((dictArray[cellName], np.zeros(N, dtype=int) ), axis=0)
-
             
-            dictArray[cellName][dictCounts[cellName]] = read.pos
-            dictCounts[cellName] = dictCounts[cellName] + 1
+
+            qualityNow = read.mapping_quality
+            duplicate1 = read.is_duplicate
+            goodRead = (qualityNow >= 40) and (not duplicate1)
+
+            if goodRead: #Dec 26 2023
+        
+                cellName = read.get_tag(tagName)
+
+                N = int(1e6)
+                if not cellName in dictCounts:
+                    dictCounts[cellName] = 0
+                    dictArray[cellName] = np.zeros(N, dtype=int)
+
+                if dictCounts[cellName] >= dictArray[cellName].shape[0]:
+                    dictArray[cellName] = np.concatenate((dictArray[cellName], np.zeros(N, dtype=int) ), axis=0)
+
+                
+                dictArray[cellName][dictCounts[cellName]] = read.pos
+                dictCounts[cellName] = dictCounts[cellName] + 1
 
         #print (len(dictArray.keys()))
 
