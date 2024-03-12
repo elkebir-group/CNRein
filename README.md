@@ -109,7 +109,6 @@ This allows for the below command to be ran without having to download any addit
 DeepCopyRun -step NaiveCopy -output ./examples/TN3
 DeepCopyRun -step DeepCopy -output ./examples/TN3
 ```
-The equivalent command can also be ran with "./examples/TN1", "./examples/Ovarian", and for the DeepCopy step "./examples/S0". 
 
 
 ## Input requirements
