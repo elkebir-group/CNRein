@@ -1,0 +1,3 @@
+./data/ACT/P3/bam/merged/remergedChunk_0.bam
+./data/ACT/P3/bam/merged/remergedChunk_1.bam
+./data/ACT/P3/bam/merged/remergedChunk_2.bam
