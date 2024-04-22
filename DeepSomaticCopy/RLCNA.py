@@ -17,7 +17,11 @@ import torch.nn.functional as F
 from torch.autograd import grad
 from torch.optim import Optimizer
 
-from shared import *
+
+if __name__ == "__main__":
+    from shared import *
+else:
+    from .shared import *
 
 
 #np.random.seed(0)
