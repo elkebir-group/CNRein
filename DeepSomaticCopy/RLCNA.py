@@ -1127,7 +1127,7 @@ def modelCNAgenerator(CNAfull, chr, start1, end1, model, Ncall, info, returnReg=
     #CNA_mean0 = np.mean(np.sum(CNAfull, axis=2), axis=1) / 2
     CNA_mean0 = np.median(np.sum(CNAfull, axis=2), axis=1) / 2
 
-    #TODO!: !I think I was doing this poorly with mean!
+    
     
     CNA_mean = np.round(CNA_mean0) - 1
     argDouble = np.argwhere(CNA_mean >= 1)[:, 0]
@@ -1839,10 +1839,10 @@ def subset_calculateError(pred_RDR, pred_BAF, RDR, HAP, chr, boolSubset, noiseRD
             #BAF_error = torch.sum(BAF_error, axis=1)
             
 
-            if True:# Attemmpt FEB 7 2024 . TODO REMOVE
+            if True:
                 BAF_int = HAP[subset1, :, 1].float() / (torch.sum(HAP[subset1], axis=2).float() + 1e-5)
                 BAF_error = torch.sum(  func1((pred_BAF1 - BAF_int) * noiseBAFInverse[subset1])  , axis=1) + 1e-5
-            else:
+            else: # Old method prior to FEB 7 2024 . TODO potentionally remove the unneeded code. 
                 #std2 = std2 + (0.25 / weight_sum)
                 weight_sum = 0.25 / noiseBAFInverse[subset1]
                 weight_sum_rel = weight_sum / (torch.sum(HAP[subset1], axis=2) + 1e-5)
@@ -2283,7 +2283,7 @@ def measurementCalculator(savedCNA, model, doBAF):
     mean1 = torch.mean(predRDR, axis=lastDim-1)
 
 
-    if False: #TODO: REEMOVE! TEMP UNDO! 
+    if False: #TODO: delete not needed code. 
         biasAdjustment = model.biasAdjuster() + 1
 
 
@@ -2564,7 +2564,7 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
     #optimizer = torch.optim.Adam(model.parameters(), lr = learningRate, betas=(0.8, 0.99))
     #optimizer = torch.optim.RMSprop(model.parameters(), lr = learningRate, alpha=(0.9))
 
-    #optimizer = torch.optim.SGD(model.parameters(), lr = learningRate) #TODO REMOVE!!! Trying for memory issue! 
+    #optimizer = torch.optim.SGD(model.parameters(), lr = learningRate) #TODO delete unneeded. Tried for memory issue. 
 
 
 
@@ -3099,7 +3099,7 @@ def simplePredict(RDR_file, BAF_file, chr_file, initialCNA_file, initialUniqueCN
         BAF = ''
     else:
         BAF = loadnpz(BAF_file)
-    chr = loadnpz(chr_file) - 1 #TODO REMOVE May 22 2023
+    chr = loadnpz(chr_file) - 1 
 
 
 
