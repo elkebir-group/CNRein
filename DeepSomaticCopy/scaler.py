@@ -1474,7 +1474,7 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
     #x = loadnpz('./data/input/filtered_S' + patientNum0 + '.npz')
     RDR_all = loadnpz(RDR_file)
 
-    ##RDR_all = RDR_all[:100] #TODO remove
+    
     if HAP_file == '':
         HAP_all = ''
     else:
@@ -1801,7 +1801,7 @@ def newFindDividers(bins_file, RDR_file, noise_file, BAF_file, BAF_noise_file, d
     
     RDR_all = loadnpz(RDR_file)
 
-    ##RDR_all = RDR_all[:100] #TODO remove
+    
     if HAP_file == '':
         HAP_all = ''
     else:
