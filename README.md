@@ -114,6 +114,7 @@ DeepCopyRun -step DeepCopy -output ./examples/TN3
 ## Input requirements
 
 The default input format is a single BAM file with different read groups for different cells. 
+The GitHub is in the process of being updated to allow cells to be alternatively indicated by cell barcode and this will be available within a week.  
 Future updates will also allow individual BAM files for each cell. 
 The default reference files are publically available at https://zenodo.org/records/10076403. 
 The final output in the form of an easily interpretable CSV file is produced in the folder "finalPrediction" within the user provided "-output" folder. 
