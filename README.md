@@ -47,7 +47,7 @@ python script.py -input <BAM file location> \
     -output <location to store results> \
     -refGenome <either "hg19" or "hg38">
 ```
-An example usage could be as below
+Additionally, "-CB" can be included if cells are indicated by cell barcode rather than read group. An example usage could be as below
 ```bash
 python script.py -input ./data/TN3_FullMerge.bam -ref ./data/refNew -output ./data/newTN3 -refGenome hg38
 ```
