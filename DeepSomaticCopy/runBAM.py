@@ -82,6 +82,329 @@ def makeAllDirectories(name):
 #quit()
 
 
+
+
+
+def bamSplitter(input_bam, output_prefix, N, tagName='CB', goodCellFile=''):
+
+    class BamWriter:
+        def __init__(self, alignment, prefix):
+            self.alignment = alignment
+            self.prefix = prefix
+            #self.barcodes = #set(barcodes)
+            self.barcodes = set([])
+            self._out_files = {}
+
+            self.barcodes_all = set([])
+
+
+        def write_record_to_barcode(self, rec, barcode, iter1, N):
+
+
+
+
+
+            if barcode not in self.barcodes_all:
+
+                if len(self.barcodes_all) >= (iter1*N):
+                    if len(self.barcodes) < N:
+                        self.barcodes.add(barcode)
+
+
+                self.barcodes_all.add(barcode)
+
+
+
+
+
+            if barcode not in self.barcodes:
+                #print ('banana')
+                #quit()
+                return
+
+            else:
+                if barcode not in self._out_files:
+                    #print ('apple')
+                    #quit()
+                    self._open_file_for_barcode(barcode)
+                self._out_files[barcode].write(rec)
+
+        def _open_file_for_barcode(self, barcode):
+
+            self._out_files[barcode] = pysam.AlignmentFile(
+                f"{self.prefix}_{barcode}.bam", "wb", template=self.alignment
+            )
+
+
+    def majorPart(input_bam, output_prefix, contigs, iter1, N, tagName, goodCells):
+        """Split a 10x barcoded sequencing file into barcode-specific BAMs
+
+        input:
+        barcodes_file: a file containing barcodes or a single barcode
+        contigs: '.' for all contigs, 'chr1' for the contig 'chr1',
+        or '1-5' for chromosomes 1, 2, 3, 4, and 5
+        """
+        alignment = pysam.AlignmentFile(input_bam)
+
+
+
+        writer = BamWriter(alignment=alignment, prefix=output_prefix)
+        if contigs == ".":
+            print("Extracting reads from all contigs")
+            recs = alignment.fetch()
+        else:
+            if "-" in contigs:
+                start, end = contigs.split("-")
+                print(f"Extracting reads from contigs {start} to {end}")
+                recs = (alignment.fetch(str(contig)) for contig in range(start, end + 1))
+            elif "," in contigs:
+                contigs = contigs.split(",")
+                print(f"Extracting reads from contigs {contigs}")
+                recs = (alignment.fetch(str(contig)) for contig in contigs)
+            else:
+                print("Extracting reads for one contig: {contigs}")
+                recs = (alignment.fetch(c) for c in [contigs])
+
+
+
+
+
+        b = 0
+        for rec in recs:
+
+            try:
+                barcode = rec.get_tag(tagName)
+                if (len(goodCells) == 0) or (barcode in goodCells):
+
+                    writer.write_record_to_barcode(rec, barcode, iter1, N)
+
+                #print ("A")
+                #print (len(writer.barcodes_all))
+                #print (len(writer.barcodes))
+            except KeyError:
+                pass
+
+            b += 1
+
+        Nloop = (len(writer.barcodes_all) - 1) // N
+        Nloop = Nloop + 1
+        return Nloop
+
+    goodCells = []
+    if goodCellFile != '':
+        goodCells = loadnpz(goodCellFile)
+
+    Nloop = 1
+    iter1 = 0
+    while iter1 < Nloop:
+        Nloop = majorPart(input_bam, output_prefix, '.', iter1, N, tagName, goodCells)
+        iter1 += 1
+
+
+
+
+
+def mergeBams(folderSplit, folderMerged):
+
+    #if dataName == '10x': #Just for now
+    #    folder1 = './data/' + dataName + '/bam/resampleSplit/'
+    #else:
+    #folder1 = './data/' + dataName + '/bam/split/'
+    folder1 = folderSplit
+
+    locationData0 = os.listdir(folder1)
+    locationData = []
+    for loc1 in locationData0:
+        if ('.bam' in loc1) and not ('.bai' in loc1):
+            #if '_mod' in loc1:
+            locationData.append(folder1 + loc1)
+    
+
+    #locationData = locationData[:30] #Todo Remove 
+
+    #finalFile = './data/' + dataName + '/bam/merged/FullMerge.bam'
+    finalFile = folderMerged + 'FullMerge.bam'
+
+
+    #finalFile = './data/' + dataName + '/bam/merged/FullMerge_fake.bam'
+
+    #print (locationData)
+    #quit()
+    #N = 10
+    N = 1000
+
+    bamListFile = folderMerged + 'bamAll.txt'
+    np.savetxt(bamListFile, locationData, fmt='%s')
+    #quit()
+
+
+    if len(locationData) <= N: 
+        
+        samtoolsLocation = 'samtools'
+        
+        #command1 = 'nice -10  samtools merge --threads 20 -b ' + bamListFile + ' ' + finalFile
+        command1 = samtoolsLocation + ' merge --threads 20 -b ' + bamListFile + ' ' + finalFile
+        os.system(command1)
+
+        #quit()
+
+        command2 = 'samtools index ' + finalFile
+        os.system(command2)
+
+    else:
+
+        
+        M = ((len(locationData) - 1) // N) + 1
+
+        chunkLocations = []
+        for a in range(0, M):
+            print (a, M)
+            locationDataNow = locationData[(a*N):]
+            locationDataNow = locationDataNow[:N]
+
+            outputFile = folderMerged + 'remergedChunk_' + str(a) + '.bam'
+
+            #print (len(locationDataNow))
+
+            bamListFile = folderMerged + 'rebamChunk_' + str(a) + '.txt'
+            np.savetxt(bamListFile, locationDataNow, fmt='%s')
+        
+            #command1 = 'nice -10 samtools merge --threads 20 -b ' + bamListFile + ' ' + outputFile
+            command1 = 'samtools merge --threads 20 -b ' + bamListFile + ' ' + outputFile
+
+            chunkLocations.append(outputFile)
+
+            os.system(command1)
+
+
+        bamListFile = folderMerged + 'bamChunks.txt'
+        np.savetxt(bamListFile, chunkLocations, fmt='%s')
+
+        command1 = 'samtools merge --threads 20 -b ' + bamListFile + ' ' + finalFile
+
+        os.system(command1)
+
+        for a in range(len(chunkLocations)):
+
+            outputFile = chunkLocations[a]
+
+            command1 = 'rm ' + outputFile
+            os.system(command1)
+
+
+        command2 = 'samtools index -@ 20 ' + finalFile
+        os.system(command2)
+        
+
+
+
+def addReadGroup(splitFolder, otherSam=False):
+
+    if otherSam:
+        samtoolsLocation = '/scratch/data/stefan/stefanSoftware/samtools_1.17/bin/samtools'
+    else:
+        samtoolsLocation = 'samtools'
+
+    #bamFolder = './data/' + dataName + '/bam/split/'
+    bamFolder = splitFolder
+    
+    bamList = os.listdir(bamFolder)
+    barcodes = []
+    for file1 in bamList:
+        if ('.bam' in file1) and not ('.bai' in file1):
+            barcode = file1.replace('.bam', '')
+            barcodes.append(barcode)
+
+
+    #print (len(barcodes))
+    #quit()
+
+    
+    for a in range(len(barcodes) ):#range(len(barcodes)):
+
+        print (a, len(barcodes))
+
+        barcode = barcodes[a]
+        bamFile = bamFolder + barcode + '.bam'
+        modifiedBamFile = bamFolder + barcode + '_mod.bam'
+        #print (bamFile)
+        #quit()
+
+        #command1 = 'nice -10 ' + samtoolsLocation + ' addreplacerg -@ 20 -r "@RG\tID:' + barcode + '\tSM:' + barcode + '"' +  ' -o ' + modifiedBamFile + ' ' +  bamFile
+        command1 = samtoolsLocation + ' addreplacerg -@ 20 -r "@RG\tID:' + barcode + '\tSM:' + barcode + '"' +  ' -o ' + modifiedBamFile + ' ' +  bamFile
+        #print (command1)
+        #quit()
+        os.system(command1)
+
+        command2 = 'mv ' + modifiedBamFile + ' ' + bamFile
+        os.system(command2)
+
+        #quit()
+
+
+
+
+
+
+def fullRenameProcess(inFile, outFile, otherSam=False):
+
+    #otherSam = True
+    #print (inFile)
+
+
+
+    folder0 = inFile.split('/')[:-1]
+    folder0 = '/'.join(folder0)
+
+    #print (folder0)
+
+
+    folder1 = folder0 + '/temp_rename'
+    os.system('mkdir ' + folder1) 
+
+    folder2 = folder0 + '/temp_rename/split/'
+    os.system('mkdir ' + folder2) 
+
+    
+    if True:
+        input_bam = inFile 
+        output_prefix = folder2
+        N = 1000
+
+        bamSplitter(input_bam, output_prefix, N)
+
+        fnames = os.listdir(folder2)
+        for a in range(len(fnames)):
+            print (a, len(fnames))
+            if ('.bam' in fnames[a]) and not ('.bai' in fnames[a]):
+
+                command1 = 'samtools index ' + folder2 + fnames[a]
+                os.system(command1)
+
+
+    addReadGroup(folder2, otherSam=otherSam)
+
+    folder_merged = folder0 + '/temp_rename/merged/'
+    os.system('mkdir ' + folder_merged)
+
+
+    mergeBams(folder2, folder_merged)
+    
+    command2 = 'mv ' + folder_merged + 'FullMerge.bam' + ' ' + outFile
+    os.system(command2)
+
+    command2 = 'mv ' + folder_merged + 'FullMerge.bam.bai' + ' ' + outFile + '.bai'
+    os.system(command2)
+
+    os.system('rm -r ' + folder1)
+
+    
+
+
+
+
+
+
 def runParallel(commandList, outLoc):
 
     #Different operating systems have different issues in terms of running commands and waiting for them to complete
@@ -1252,7 +1575,20 @@ def findReadCounts(bamLoc, outLoc):
 
 
 
-def runAllSteps(bamLoc, refLoc, outLoc, refGenome):
+def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
+
+
+
+    otherSam = False
+    if useCB:
+        bamLocNew = bamLoc.split('.')
+        bamLocNew_end = bamLocNew[-1]
+        bamLocNew = '.'.join(bamLocNew)
+        bamLocNew = bamLocNew + 'new.' + bamLocNew_end
+
+        fullRenameProcess(bamLoc, bamLocNew, otherSam=otherSam)
+
+        bamLoc = bamLocNew
 
     
     numSteps = '9'
