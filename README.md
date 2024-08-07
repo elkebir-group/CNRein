@@ -114,35 +114,11 @@ DeepCopyRun -step DeepCopy -output ./examples/TN3
 
 ## Input requirements
 
-The default input format is a single BAM file with different read groups for different cells. 
-The GitHub is in the process of being updated to allow cells to be alternatively indicated by cell barcode and this will be available within a week.  
+The default input format is a single BAM file with different read groups (or cell barcodes) for different cells. 
 Future updates will also allow individual BAM files for each cell. 
 The default reference files are publically available at https://zenodo.org/records/10076403. 
 The final output in the form of an easily interpretable CSV file is produced in the folder "finalPrediction" within the user provided "-output" folder. 
 
-## Tree estimation
-
-Our pip package also supports tree estimation from copy number profiles. 
-However, this requires installing the additional python packages skbio and dendropy (not installed automatically when installing DeepCopy). 
-To estimate the tree of copy number profiles estimated via DeepCopy, simply run:
-```bash
-DeepCopyRun -tree -output <location to store results>
-```
-Note, that this assumes previous commands were run with this same "-output" folder. 
-New results will be saved as CSV files in a "tree" subdirectory of the "-output" directory. 
-
-Our tree estimation algorithm also supports running on data produced by other methods. 
-This requires input copy number profiles in the form of one CSV file for haplotype 1 and one CSV file for haplotype 2. 
-Each of these files is a matrix of integers with rows indicating the cell and columns indicating the bin/segment. 
-Bins/segments can be of any size including variable bin sizes (ZCNT distances do not depend on this, so this information does not need to be provided to our algorithm). 
-Additionally, a CSV file consisting of a list of integer chromosome numbers for each bin must be provided (if the X chromosome is included, label it chromosome 23).
-Given these inputs, tree estimation can be run with the below command. 
-```bash
-DeepCopyRun -tree -output <location to store results> \
-    -hap1 <haplotype 1 copy numbers> \
-    -hap2 <haplotype 2 copy numbers> \
-    -chr <chromsome numbers>
-```
 
 
 
