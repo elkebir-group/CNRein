@@ -21,9 +21,9 @@ def getValuesSYS(listIn, keyList):
     return valueList
 
 
-def runEverything(bamLoc, refLoc, outLoc, refGenome):
+def runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=False):
 
-    runAllSteps(bamLoc, refLoc, outLoc, refGenome)
+    runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
     runProcessFull(outLoc, refLoc, refGenome)
     scalorRunAll(outLoc)
     easyRunRL(outLoc)
