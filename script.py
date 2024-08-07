@@ -17,8 +17,14 @@ def getValuesSYS(listIn, keyList):
 if __name__ == "__main__":
     keyList = ['-input', '-ref', '-output', '-refGenome']
     listIn = np.array(sys.argv)
+
+    doCB = False
+    if '-CB' in listIn:
+        listIn = listIn[listIn!='-CB']
+        doCB = True
+
     values1 = getValuesSYS(listIn, keyList)
     bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
 
-    runEverything(bamLoc, refLoc, outLoc, refGenome)
+    runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=doCB)
 
