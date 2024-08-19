@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "DeepSomaticCopy"
+version = "0.0.20"
+authors = [
+  { name="Stefan Ivanovic", email="stefan4@illinois.edu" },
+]
+description = "Copy number calling on single cell DNA sequencing data"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ['numpy >= 1.17.0', 'pandas >= 1.2.3', 'statsmodels >= 0.13.5', 'pysam >= 0.15.3', 'torch >= 1.10.0', 'tqdm']
+[project.scripts]
+DeepCopyRun = 'DeepSomaticCopy.pipeline:scriptRunEverything'
+DeepCopyBasicRespondCheck = 'DeepSomaticCopy.pipeline:respondCheck'
+DeepCopySecondRespondCheck = 'DeepSomaticCopy.pipeline:scriptCheck'
+
+
+
+[project.urls]
+"Homepage" = "https://github.com/elkebir-group/DeepCopy"
+"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
