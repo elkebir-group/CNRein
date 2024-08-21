@@ -2406,8 +2406,7 @@ def runNaiveCopy(outLoc):
     initialCNA_file = outLoc + '/binScale/initialCNA.npz'
     initialUniqueCNA_file = outLoc + '/binScale/initialUniqueCNA.npz'
     initialUniqueIndex_file = outLoc + '/binScale/initialIndex.npz'
-    HAP_mod_file = outLoc + '/binScale/HAP_mod.npz'
-    findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file, chr_file, divider_file, error_file, dividerList_file, initialCNA_file, initialUniqueCNA_file, initialUniqueIndex_file)
+    findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, divider_file, error_file, dividerList_file, initialCNA_file, initialUniqueCNA_file, initialUniqueIndex_file)
     
     
 
