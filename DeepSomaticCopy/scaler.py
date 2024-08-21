@@ -1918,11 +1918,12 @@ def newFindDividers(bins_file, RDR_file, noise_file, BAF_file, BAF_noise_file, d
 
 
 
-def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file, chr_file, divider_file, error_file, dividerList_file, initialCNA_file, initialUniqueCNA_file, initialUniqueIndex_file):
 
-    
 
-    def findCurrentCNA(RDR, noise, HAP, HAP_mod, BAF_noise):
+def findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, divider_file, error_file, dividerList_file, initialCNA_file, initialUniqueCNA_file, initialUniqueIndex_file):
+
+
+    def findCurrentCNA(RDR, noise, HAP, BAF_noise):
 
 
         
@@ -1980,7 +1981,7 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file,
 
 
                 HAP_now = HAP[argValid] 
-                HAP_mod_now = HAP_mod[argValid] 
+                #HAP_mod_now = HAP_mod[argValid] 
 
                 #if False:
                 #    BAF_error = (np.log(BAF_now_adjusted) * HAP_mod_now[:, 1]) + (np.log(1 - BAF_now_adjusted) * HAP_mod_now[:, 0] )
@@ -2100,7 +2101,7 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file,
   
 
 
-    def doInitialPart(dividerNums, RDR_all, noise_all, BAF_all, HAP_mod_all, BAF_noise_all, chr):
+    def doInitialPart(dividerNums, RDR_all, noise_all, BAF_all, BAF_noise_all, chr):
 
         
 
@@ -2117,7 +2118,7 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file,
             #quit()
 
             BAF = BAF_all[a]
-            HAP_mod = HAP_mod_all[a]
+            #HAP_mod = HAP_mod_all[a]
             noise = noise_all[a]
             BAF_noise = BAF_noise_all[a]
             #BAF = np.min(np.array([BAF, 1-BAF]), axis=0)
@@ -2126,7 +2127,8 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file,
             #RDR, BAF = RDR_all[a], BAF_all[a]
             RDR = RDR / dividerNums[a]
 
-            CNA = findCurrentCNA(RDR, noise, BAF, HAP_mod, BAF_noise)
+            #CNA = findCurrentCNA(RDR, noise, BAF, HAP_mod, BAF_noise)
+            CNA = findCurrentCNA(RDR, noise, BAF, BAF_noise)
 
 
             CNAfull[a] = CNA
@@ -2165,7 +2167,7 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file,
     else:
         BAF_all = loadnpz(BAF_file)[:dividerNums.shape[0]]
         BAF_noise_all = loadnpz(BAF_noise_file)[:dividerNums.shape[0]] + 1e-5
-        HAP_mod = loadnpz(HAP_mod_file)
+        #HAP_mod = loadnpz(HAP_mod_file)
     
 
     #chr = loadnpz('./data/input/chr_S' + patientNum0 + '.npz')
@@ -2207,7 +2209,8 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file,
     if type(BAF_all) == type(''):
         CNAfull = np.round(RDR_all[argList] / dividerNums.reshape((-1, 1)) ).astype(int)
     else:
-        CNAfull = doInitialPart(dividerNums, RDR_all[argList], noise[argList], BAF_all[argList], HAP_mod[argList],  BAF_noise_all[argList], chr)
+        #CNAfull = doInitialPart(dividerNums, RDR_all[argList], noise[argList], BAF_all[argList], HAP_mod[argList],  BAF_noise_all[argList], chr)
+        CNAfull = doInitialPart(dividerNums, RDR_all[argList], noise[argList], BAF_all[argList],  BAF_noise_all[argList], chr)
         
 
     
@@ -2223,6 +2226,10 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file,
         CNAfull = CNAfull.reshape((CNAfull.shape[0], CNAfull.shape[1]//2, 2))
     relevantIndex = inverse1[indexFirst]
 
+
+    #plt.imshow(np.sum(CNAfull, axis=2))
+    #plt.show()
+
     CNAfull_total = np.sum(CNAfull, axis=2)
     highNoise = np.sum(np.abs( CNAfull_total[:, 1:] - CNAfull_total[:, :-1] ), axis=1)
     #print (highNoise.shape)
@@ -2234,7 +2241,6 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, HAP_mod_file, BAF_noise_file,
 
     np.savez_compressed(initialUniqueCNA_file, CNAfull)
     #np.savez_compressed(initialUniqueIndex_file, relevantIndex)
-
 
 
 
