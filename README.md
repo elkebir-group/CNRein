@@ -1,8 +1,8 @@
-# DeepCopy
+# CNRein
 
 [![PyPI version](https://badge.fury.io/py/DeepSomaticCopy.svg)](https://badge.fury.io/py/DeepSomaticCopy)
 
-DeepCopy is a deep reinforcement learning based evolution-aware algorithm for haplotype-specific copy number calling on single cell DNA sequencing data. 
+CNRein (formerly known as DeepCopy) is a deep reinforcement learning based evolution-aware algorithm for haplotype-specific copy number calling on single cell DNA sequencing data. 
 
 <p align="center">
   <img width="1000" height="220" src="./overview.png">
@@ -27,7 +27,7 @@ Note, pip can be used as an alternative to conda for any of these packages avail
 
 ### Pip installation
 
-Run the below command to install DeepCopy
+Run the below command to install CNRein
 ```bash
 pip install DeepSomaticCopy
 ```
@@ -55,7 +55,7 @@ Additionally, "-CB" can be included if cells are indicated by cell barcode rathe
 
 ### With pip installation
 
-DeepCopy can be ran with the following command:
+CNRein can be ran with the following command:
 ```bash
 DeepCopyRun -input <BAM file location> \
     -ref <reference folder location> \
