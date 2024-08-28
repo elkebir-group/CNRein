@@ -2598,11 +2598,13 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
     while continue1:
         iter += 1
 
+        print ('iterations', iter)
+
         #gapLearn = 2 #Default 2
         gapLearn = 2 #Default 2
         gapTime = 10#5 #Default 5
 
-        if len(cellProbList) > gapTime:
+        if False:#len(cellProbList) > gapTime:
             cellProb_array = np.array(cellProbList)
             cellProb_max1 = np.max(cellProb_array[:-gapTime])
             cellProb_max2 = np.max(cellProb_array[-gapTime:])
@@ -2614,12 +2616,12 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
 
         if stopIter:
             #if iter == 100:
-            if iter == 200:
+            if iter == 400:
                 continue1 = False
 
 
         if continue1:
-            print (iter)
+            #print (iter)
             info = [iter]
 
 
@@ -2721,9 +2723,9 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
                 inverse_temp = uniqueValMaker( CNAfull_temp.reshape((CNAfull_temp.shape[0],  CNAfull_temp.shape[1]*CNAfull_temp.shape[2] )) )
                 _, index_temp = np.unique(inverse_temp, return_index=True)
 
-                print ("A")
-                print (np.argwhere(index_temp >=  CNAfull.shape[0] ).shape)
-                print (np.argwhere(index_temp <  CNAfull.shape[0] ).shape)
+                #print ("A")
+                #print (np.argwhere(index_temp >=  CNAfull.shape[0] ).shape)
+                #print (np.argwhere(index_temp <  CNAfull.shape[0] ).shape)
 
                 #quit()
                 #CNAfull_now = np.concatenate((CNAfull, CNAfull_best), axis=0)
@@ -2798,9 +2800,9 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
 
             
 
-            print ('')
+            #print ('')
             #print (cellProb)
-            print (torch.mean(cellProb))
+            #print (torch.mean(cellProb))
             #print ('cell', torch.max(cellProb))
             #print (np.mean(modelProbSum.data.numpy() ))
             cellProb_mean = torch.mean(cellProb).data.numpy()
@@ -2827,12 +2829,12 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
 
                 diff1 = bestCNA[:, 1:, 0] - bestCNA[:, :-1, 0]
                 diff1[diff1!=0] = 1
-                print ('diff1', np.sum(diff1))
+                #print ('diff1', np.sum(diff1))
 
                 np.savez_compressed(predict_file, bestCNA)
 
 
-                print ('counterAll', np.argwhere( counterAll >= 1).shape, np.argwhere( counterAll >= (iter // 2) + 1  ).shape ,iter,  (iter // 2) + 1 )
+                #print ('counterAll', np.argwhere( counterAll >= 1).shape, np.argwhere( counterAll >= (iter // 2) + 1  ).shape ,iter,  (iter // 2) + 1 )
 
 
 
@@ -2846,17 +2848,17 @@ def trainModel(CNAfull, chr, RDR, HAP, originalError, modelName, predict_file, N
             #    print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
 
             
-            print ("A")
+            #print ("A")
             optimizer.zero_grad()
-            print ("B")
+            #print ("B")
             loss.backward()
-            print ("C")
+            #print ("C")
             #if withAdjust:
             #    print ("C1")
             #    lossAdjustment.backward()
-            print ('C2')
+            #print ('C2')
             optimizer.step()
-            print ("D")
+            #print ("D")
 
 
 
@@ -3169,4 +3171,4 @@ def easyRunRL(outLoc):
     #balance = 2.0
     balance = 1.0
 
-    simpleTrain(RDR_file, HAP_file, chr_file, initialCNA_file, initialUniqueCNA_file, originalError_file, modelName, predict_file, Ncall, noise_file, BAF_noise_file, balance, withAdjust)
+    simpleTrain(RDR_file, HAP_file, chr_file, initialCNA_file, initialUniqueCNA_file, originalError_file, modelName, predict_file, Ncall, noise_file, BAF_noise_file, balance, withAdjust, stopIter=True)
