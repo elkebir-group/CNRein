@@ -21,17 +21,20 @@ def getValuesSYS(listIn, keyList):
     return valueList
 
 
-def runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=False):
+def runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=False, maxPloidy=10):
 
     runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
     runProcessFull(outLoc, refLoc, refGenome)
-    scalorRunAll(outLoc)
+    scalorRunAll(outLoc, maxPloidy=maxPloidy)
     easyRunRL(outLoc)
     saveReformatCSV(outLoc, isNaive=False)
 
 def scriptRunEverything():
     import sys
     listIn = np.array(sys.argv)
+
+    maxPloidy = 10
+    
 
     if (('-h' in listIn) or ('-help' in listIn)) or ('--help' in listIn):
 
@@ -77,10 +80,12 @@ def scriptRunEverything():
     elif not '-step' in listIn:
 
         keyList = ['-input', '-ref', '-output', '-refGenome']
-        
         values1 = getValuesSYS(listIn, keyList)
+        if '-maxPloidy' in listIn:
+            maxPloidy = float(getValuesSYS(listIn, ['-maxPloidy'])[0])
+
         bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
-        runEverything(bamLoc, refLoc, outLoc, refGenome)
+        runEverything(bamLoc, refLoc, outLoc, refGenome, maxPloidy=maxPloidy)
 
     else:
 
@@ -101,7 +106,11 @@ def scriptRunEverything():
         if stepVal == 'NaiveCopy':
             values1 = getValuesSYS(listIn, ['-output'])
             outLoc = values1[0]
-            runNaiveCopy(outLoc)
+
+            if '-maxPloidy' in listIn:
+                maxPloidy = float(getValuesSYS(listIn, ['-maxPloidy'])[0])
+
+            runNaiveCopy(outLoc, maxPloidy=maxPloidy)
 
         if stepVal == 'DeepCopy':
             values1 = getValuesSYS(listIn, ['-output'])

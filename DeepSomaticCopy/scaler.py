@@ -1027,7 +1027,7 @@ def findRegions(RDR_file, BAF_file, chr_File, region_file):
 
 
 
-def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, dividerList_file, region_file, precise=True, naive=False):
+def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, dividerList_file, region_file, precise=True, naive=False, maxPloidy=10):
 
 
 
@@ -1240,7 +1240,7 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
         return error1
 
 
-    def findBestDivider(means1, vars1, noises1, precise):
+    def findBestDivider(means1, vars1, noises1, precise, maxPloidy=10):
 
         #print ('noise')
         #print (np.sum(noises1[:, 0]))
@@ -1250,6 +1250,8 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
         #BnumAll = np.zeros((50, means1.shape[0]))
         #for b in range(50):
         #    divider = 0.2 + (b * 0.01)
+
+        
 
 
         Ncheck = 100
@@ -1261,23 +1263,25 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
         for b in range(Ncheck):
             divider = 0.1 * np.exp(b * tickSize) #0.1
 
-            #for b in range(200):
-            #    divider = 0.1 * np.exp(b * 0.01)
+            if (1.0 / divider) < maxPloidy:
 
-            #divider = 0.15 * np.exp(b * 0.02)
+                #for b in range(200):
+                #    divider = 0.1 * np.exp(b * 0.01)
 
-            dividerList.append(divider)
+                #divider = 0.15 * np.exp(b * 0.02)
 
-            #print (divider)
-            #plt.plot(means1 / divider)
-            #plt.plot(np.floor(  (means1 / divider) + 0.5))
-            #plt.show()
+                dividerList.append(divider)
 
-            #print (means1.shape)
+                #print (divider)
+                #plt.plot(means1 / divider)
+                #plt.plot(np.floor(  (means1 / divider) + 0.5))
+                #plt.show()
 
-            error1 = checkDivider(means1, vars1, divider, noises1)
-            #BnumAll[b] = Bnum
-            errorList.append(error1)
+                #print (means1.shape)
+
+                error1 = checkDivider(means1, vars1, divider, noises1)
+                #BnumAll[b] = Bnum
+                errorList.append(error1)
 
         #plt.plot(dividerList, errorList)
         #plt.show()
@@ -1474,7 +1478,7 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
     #x = loadnpz('./data/input/filtered_S' + patientNum0 + '.npz')
     RDR_all = loadnpz(RDR_file)
 
-    
+    ##RDR_all = RDR_all[:100] #TODO remove
     if HAP_file == '':
         HAP_all = ''
     else:
@@ -1566,7 +1570,7 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
 
             noises1 = ''
 
-            divideGood, dividerList, errorList = findBestDivider(means1, vars1, noises1, precise)
+            divideGood, dividerList, errorList = findBestDivider(means1, vars1, noises1, precise, maxPloidy=maxPloidy)
 
 
             
@@ -1801,7 +1805,7 @@ def newFindDividers(bins_file, RDR_file, noise_file, BAF_file, BAF_noise_file, d
     
     RDR_all = loadnpz(RDR_file)
 
-    
+    ##RDR_all = RDR_all[:100] #TODO remove
     if HAP_file == '':
         HAP_all = ''
     else:
@@ -2248,7 +2252,6 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, div
 
 
 
-
 RDR_file = './data/' + folder1 + '/binScale/filtered_RDR_avg.npz'
 noise_file = './data/' + folder1 + '/binScale/filtered_RDR_noise.npz'
 chr_file = './data/' + folder1 + '/binScale/chr_avg.npz'
@@ -2368,7 +2371,7 @@ def scalorRunBins(outLoc):
 
 
 
-def runNaiveCopy(outLoc):
+def runNaiveCopy(outLoc, maxPloidy=10):
     
 
 
@@ -2390,7 +2393,7 @@ def runNaiveCopy(outLoc):
     error_file = outLoc + '/binScale/dividerError.npz'
     dividerList_file = outLoc + '/binScale/dividerAll.npz'
     HAP_file = outLoc + '/initial/HAP_1M.npz'
-    findDividers(RDR_file, HAP_file, chr_file, divider_file, error_file, dividerList_file, region_file)
+    findDividers(RDR_file, HAP_file, chr_file, divider_file, error_file, dividerList_file, region_file, maxPloidy=maxPloidy)
     #print ('Done')
 
 
@@ -2406,6 +2409,7 @@ def runNaiveCopy(outLoc):
     initialCNA_file = outLoc + '/binScale/initialCNA.npz'
     initialUniqueCNA_file = outLoc + '/binScale/initialUniqueCNA.npz'
     initialUniqueIndex_file = outLoc + '/binScale/initialIndex.npz'
+    #HAP_mod_file = outLoc + '/binScale/HAP_mod.npz'
     findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, divider_file, error_file, dividerList_file, initialCNA_file, initialUniqueCNA_file, initialUniqueIndex_file)
     
     
@@ -2414,9 +2418,9 @@ def runNaiveCopy(outLoc):
     print ('Done')
 
 
-def scalorRunAll(outLoc):
+def scalorRunAll(outLoc, maxPloidy=10):
     scalorRunBins(outLoc)
-    runNaiveCopy(outLoc)
+    runNaiveCopy(outLoc, maxPloidy=maxPloidy)
 
 
 #outLoc = './data/newTN3'
