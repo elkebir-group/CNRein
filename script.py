@@ -18,13 +18,18 @@ if __name__ == "__main__":
     keyList = ['-input', '-ref', '-output', '-refGenome']
     listIn = np.array(sys.argv)
 
+    maxPloidy = 10
+    
     doCB = False
     if '-CB' in listIn:
         listIn = listIn[listIn!='-CB']
         doCB = True
+    
+    if '-maxPloidy' in listIn:
+        maxPloidy = float(getValuesSYS(listIn, ['-maxPloidy'])[0])
 
     values1 = getValuesSYS(listIn, keyList)
     bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
 
-    runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=doCB)
+    runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=doCB, maxPloidy=maxPloidy)
 
