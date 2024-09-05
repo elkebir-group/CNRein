@@ -69,7 +69,7 @@ DeepCopyRun -input ./data/TN3_FullMerge.bam \
     -output ./data/newTN3 \
     -refGenome hg38
 ```
-Also, "-CB" can be included if cells are indicated by cell barcode rather than read group. 
+Optional parameters include "-CB" if cells are indicated by cell barcode rather than read group, and "-maxPloidy {some value}" to set a maximum ploidy value for predictions. 
 
 Additionally, one can run only parts of the DeepCopy pipeline with the following command:
 ```bash
