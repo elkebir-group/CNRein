@@ -2206,7 +2206,8 @@ def findInitialCNA(RDR_file, noise_file, BAF_file, BAF_noise_file, chr_file, div
         minList = []
         arange1 = np.arange(errorList.shape[0])
         min1 = np.min(errorList)
-        while np.min(errorList) < min1 + 1:
+        #while np.min(errorList) < min1 + 1:
+        if True:
             argMin1 = np.argmin(errorList)
             errorList[np.abs(arange1 - argMin1) <= 5] = min1 + 10
             minList.append(argMin1)
