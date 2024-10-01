@@ -21,6 +21,25 @@ def getValuesSYS(listIn, keyList):
     return valueList
 
 
+def checkInvalidArg(listIn, keyList):
+
+    listIn_ar = np.array(listIn)
+    badArg = listIn_ar[np.isin(listIn_ar,  np.array(keyList))]
+
+
+
+    if badArg.shape[0] != 0:
+
+        print ("Invalid arguements:")
+        for a in range(badArg.shape[0]):
+            print (badArg[a])
+        quit()
+
+
+
+
+
+
 def runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=False, maxPloidy=10):
 
     runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
@@ -33,7 +52,18 @@ def scriptRunEverything():
     import sys
     listIn = np.array(sys.argv)
 
-    maxPloidy = 10
+    maxPloidy = 10.1
+
+
+
+    doCB = False
+    if '-CB' in listIn:
+        doCB = True
+        useCB = True
+
+
+    #keyList = [ 'python', 'python3', '-output', '-hap1', '-hap2', '-chr', ]
+    #checkInvalidArg(listIn, ['maxPloidy', 'maxPliody'], ['-maxPloidy'])
     
 
     if (('-h' in listIn) or ('-help' in listIn)) or ('--help' in listIn):
@@ -79,13 +109,14 @@ def scriptRunEverything():
 
     elif not '-step' in listIn:
 
+        
         keyList = ['-input', '-ref', '-output', '-refGenome']
         values1 = getValuesSYS(listIn, keyList)
         if '-maxPloidy' in listIn:
             maxPloidy = float(getValuesSYS(listIn, ['-maxPloidy'])[0])
 
         bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
-        runEverything(bamLoc, refLoc, outLoc, refGenome, maxPloidy=maxPloidy)
+        runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=doCB, maxPloidy=maxPloidy)
 
     else:
 
@@ -99,7 +130,7 @@ def scriptRunEverything():
             values1 = getValuesSYS(listIn, keyList)
             bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
 
-            runAllSteps(bamLoc, refLoc, outLoc, refGenome)
+            runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
             runProcessFull(outLoc, refLoc, refGenome)
             scalorRunBins(outLoc)
         
@@ -123,7 +154,7 @@ def scriptRunEverything():
             keyList = ['-input', '-ref', '-output', '-refGenome']
             values1 = getValuesSYS(listIn, keyList)
             bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
-            runAllSteps(bamLoc, refLoc, outLoc, refGenome)
+            runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
         
         if stepVal == 'variableBins':
             keyList = ['-ref', '-output', '-refGenome']
