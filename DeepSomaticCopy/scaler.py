@@ -1296,10 +1296,24 @@ def findDividers(RDR_file, HAP_file, chr_File, divider_file, error_file, divider
 
             Nprecise = 20
 
-            if argMin == Ncheck - 1:
-                argMin = Ncheck - 2
+            isLimited = False
+
+            if argMin >= dividerList.shape[0] - 1:
+                argMin = dividerList.shape[0] - 2
+                isLimited = True
 
             #print (argMin)
+
+            try:
+                dividerList[argMin + 1]
+            except:
+                print ("dividerList[argMin + 1] failed in scaler.py")
+                print ('argMin', argMin)
+                print ('dividerList', dividerList.shape)
+                print ('errorList', errorList.shape)
+                print ('isLimited', isLimited)
+
+
 
             dividerBefore = dividerList[argMin - 1]
             dividerAfter = dividerList[argMin + 1]
