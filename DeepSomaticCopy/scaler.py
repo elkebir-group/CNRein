@@ -628,8 +628,8 @@ def applyVariableBins(RDR_file, bins_file, chr_file, RDR_file2, noise_file, chr_
 
         HAP_sum[:, count1] = np.sum(HAP[:, args1], axis=1)
         
-        #data_avg[:, count1] = np.mean(data[:, args1], axis=1)
-        data_avg[:, count1] = np.median(data[:, args1], axis=1)
+        data_avg[:, count1] = np.mean(data[:, args1], axis=1)
+        #data_avg[:, count1] = np.median(data[:, args1], axis=1)
 
         #adjust_avg[count1] = np.mean(adjustment[args1])
 
