@@ -71,7 +71,7 @@ CNRein -input ./data/TN3_FullMerge.bam \
 ```
 Optional parameters include "-CB" if cells are indicated by cell barcode rather than read group, and "-maxPloidy {some value}" to set a maximum ploidy value for predictions. 
 
-Additionally, one can run only parts of the DeepCopy pipeline with the following command:
+Additionally, one can run only parts of the CNRein pipeline with the following command:
 ```bash
 CNRein -step <name of step to be ran> \
     -input <BAM file location> \
@@ -90,26 +90,26 @@ Inputs: "-input" BAM file
 
 Outputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", and "filtered_RDR_noise.npz". Additionally all files in ./counts, ./info, ./phased, ./phasedCounts ./readCounts, and ./initial. 
 
-#### NaiveCopy step
+#### CNNaive step
 Inputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", and "filtered_RDR_noise.npz". In ./initial the files chr_1M.npz, RDR_1M.npz, and HAP_1M.npz.
 
 Outputs: In ./binScale the files "dividerAll.npz", "dividerError.npz", "dividers.npz", "initialCNA.npz", "initialIndex.npz", "initialUniqueCNA.npz" and "regions.npz". Additionally, "./finalPrediciton/NaiveCopyPrediction.csv". 
 
-#### DeepCopy step
+#### CNRein step
 Inputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "filtered_HAP_avg.npz", "filtered_RDR_avg.npz", "filtered_RDR_noise.npz", and "initialUniqueCNA.npz". 
 
 Outputs: In ./model the files "model_now.pt", and "pred_now.npz". Additionally, "./finalPrediciton/DeepCopyPrediction.csv". 
 
 
 The "CNNaive" and "CNRein" steps do not require bcftools, samtools or SHAPE-IT. 
-Instead, they only require python package dependencies that are automatically installed when installing DeepCopy through pip. 
+Instead, they only require python package dependencies that are automatically installed when installing CNRein through pip. 
 The steps "CNNaive" and "CNRein" only require the "-output" argument, and not "-ref", "refGenome", or "-input" (it is assumed that the correct data for these steps is already in the "-output" folder). 
 In the "examples" folder, we provide the input to the "CNNaive" and "CNRein" steps for three datasets from our paper. 
 For S0, we provide input files to "CNRein" but not "CNNaive" due to GitHub's file size constraints (since S0 contains more cells, the files are larger). 
 This allows for the below command to be ran without having to download any additional data.
 ```bash
-CNRein -step NaiveCopy -output ./examples/TN3
-CNRein -step DeepCopy -output ./examples/TN3
+CNRein -step CNNaive -output ./examples/TN3
+CNRein -step CNRein -output ./examples/TN3
 ```
 
 
