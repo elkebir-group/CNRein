@@ -1,6 +1,6 @@
 # CNRein
 
-[![PyPI version](https://badge.fury.io/py/DeepSomaticCopy.svg)](https://badge.fury.io/py/DeepSomaticCopy)
+[![PyPI version](https://badge.fury.io/py/CNRein.svg)](https://badge.fury.io/py/CNRein)
 
 CNRein (formerly known as DeepCopy) is a deep reinforcement learning based evolution-aware algorithm for haplotype-specific copy number calling on single cell DNA sequencing data. 
 
@@ -29,7 +29,7 @@ Note, pip can be used as an alternative to conda for any of these packages avail
 
 Run the below command to install CNRein
 ```bash
-pip install DeepSomaticCopy
+pip install CNRein
 ```
 This automatically installs numpy, pandas, pysam, statsmodels, and pytorch. However, samtools, bcftools and shapeit4 still need to be installed (all of these are available via bioconda). 
 
@@ -57,14 +57,14 @@ Additionally, "-CB" can be included if cells are indicated by cell barcode rathe
 
 CNRein can be ran with the following command:
 ```bash
-DeepCopyRun -input <BAM file location> \
+CNRein -input <BAM file location> \
     -ref <reference folder location> \
     -output <location to store results> \
     -refGenome <either "hg19" or "hg38">
 ```
 An example command could be:
 ```bash
-DeepCopyRun -input ./data/TN3_FullMerge.bam \
+CNRein -input ./data/TN3_FullMerge.bam \
     -ref ./data/refNew \
     -output ./data/newTN3 \
     -refGenome hg38
@@ -73,16 +73,16 @@ Optional parameters include "-CB" if cells are indicated by cell barcode rather 
 
 Additionally, one can run only parts of the DeepCopy pipeline with the following command:
 ```bash
-DeepCopyRun -step <name of step to be ran> \
+CNRein -step <name of step to be ran> \
     -input <BAM file location> \
     -ref <reference folder location> \
     -output <location to store results> \
     -refGenome <either "hg19" or "hg38">
 ```
-Here "name of step to be ran" can be any of the three sequential steps: "processing" for data processing steps, "NaiveCopy" for additional NaiveCopy steps or "DeepCopy" for the final deep reinforcement learning step. 
+Here "name of step to be ran" can be any of the three sequential steps: "processing" for data processing steps, "CNNaive" for additional NaiveCopy steps or "CNRein" for the final deep reinforcement learning step. 
 The "processing" step utilizes BAM files as inputs, and produces segments with haplotype specific read counts and GC bais corrected read depths (stored in "binScale") as well as intermediary files (stored in "initial", "counts", "info", "phased", "phasedCounts" and "readCounts"). 
-The "NaiveCopy" step utilized the segments and read counts produced by "process" and generates NaiveCopy's predictions stored in "finalPrediction" as well as intermediate files stored in "binScale". 
-The "DeepCopy" step utilizes the outputs of both "processing" and "NaiveCopy", and produces predictions in "finalPrediction", as well as the neural network model stored in "model". 
+The "CNNaive" step utilized the segments and read counts produced by "process" and generates NaiveCopy's predictions stored in "finalPrediction" as well as intermediate files stored in "binScale". 
+The "CNRein" step utilizes the outputs of both "processing" and "CNNaive", and produces predictions in "finalPrediction", as well as the neural network model stored in "model". 
 In terms of the precise files, we have the following. 
 
 #### Processing step
@@ -101,15 +101,15 @@ Inputs: In ./binScale the files "BAF_noise.npz", "bins.npz", "chr_avg.npz", "fil
 Outputs: In ./model the files "model_now.pt", and "pred_now.npz". Additionally, "./finalPrediciton/DeepCopyPrediction.csv". 
 
 
-The "NaiveCopy" and "DeepCopy" steps do not require bcftools, samtools or SHAPE-IT. 
+The "CNNaive" and "CNRein" steps do not require bcftools, samtools or SHAPE-IT. 
 Instead, they only require python package dependencies that are automatically installed when installing DeepCopy through pip. 
-The steps "NaiveCopy" and "DeepCopy" only require the "-output" argument, and not "-ref", "refGenome", or "-input" (it is assumed that the correct data for these steps is already in the "-output" folder). 
-In the "examples" folder, we provide the input to the "NaiveCopy" and "DeepCopy" steps for three datasets from our paper. 
-For S0, we provide input files to "DeepCopy" but not "NaiveCopy" due to GitHub's file size constraints (since S0 contains more cells, the files are larger). 
+The steps "CNNaive" and "CNRein" only require the "-output" argument, and not "-ref", "refGenome", or "-input" (it is assumed that the correct data for these steps is already in the "-output" folder). 
+In the "examples" folder, we provide the input to the "CNNaive" and "CNRein" steps for three datasets from our paper. 
+For S0, we provide input files to "CNRein" but not "CNNaive" due to GitHub's file size constraints (since S0 contains more cells, the files are larger). 
 This allows for the below command to be ran without having to download any additional data.
 ```bash
-DeepCopyRun -step NaiveCopy -output ./examples/TN3
-DeepCopyRun -step DeepCopy -output ./examples/TN3
+CNRein -step NaiveCopy -output ./examples/TN3
+CNRein -step DeepCopy -output ./examples/TN3
 ```
 
 
