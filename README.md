@@ -112,7 +112,6 @@ CNRein -step CNNaive -output ./examples/TN3
 CNRein -step CNRein -output ./examples/TN3
 ```
 
-
 ## Input requirements
 
 The default input format is a single BAM file with different read groups (or cell barcodes) for different cells. 
