@@ -1,6 +1,5 @@
 # CNRein
 
-[![PyPI version](https://badge.fury.io/py/CNRein.svg)](https://badge.fury.io/py/CNRein)
 [![PyPI version](https://badge.fury.io/py/CNRein.svg?cacheSeconds=0)](https://badge.fury.io/py/CNRein)
 
 CNRein (formerly known as DeepCopy) is a deep reinforcement learning based evolution-aware algorithm for haplotype-specific copy number calling on single cell DNA sequencing data. 
