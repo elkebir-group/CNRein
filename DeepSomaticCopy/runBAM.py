@@ -1338,7 +1338,10 @@ def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
         bamLocNew = '.'.join(bamLocNew)
         bamLocNew = bamLocNew + 'new.' + bamLocNew_end
 
-        fullRenameProcess(bamLoc, bamLocNew, otherSam=otherSam)
+        if os.path.exists(bamLocNew):
+            print('Skipping BAM renaming')
+        else:
+            fullRenameProcess(bamLoc, bamLocNew, otherSam=otherSam)
 
         bamLoc = bamLocNew
 

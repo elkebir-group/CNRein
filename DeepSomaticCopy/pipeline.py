@@ -1,4 +1,5 @@
 import sys
+import os
 import numpy as np
 
 from .process import runProcessFull
@@ -130,7 +131,12 @@ def scriptRunEverything():
             values1 = getValuesSYS(listIn, keyList)
             bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
 
-            runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
+            hist_file = outLoc + '/initial/allHistBam_100k.npz'
+            chr_file = outLoc + '/initial/allChr_100k.npz'
+            if os.path.exists(hist_file) and os.path.exists(chr_file):
+                print("Skipping BAM processing beacuse chr_file and hist_file exist")
+            else:
+                runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
             runProcessFull(outLoc, refLoc, refGenome)
             scalorRunBins(outLoc)
         
