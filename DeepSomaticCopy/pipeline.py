@@ -124,8 +124,6 @@ def scriptRunEverything():
         stepVal = getValuesSYS(listIn, ['-step'])
         stepVal = stepVal[0]
 
-        
-
         if stepVal == 'processing':
             keyList = ['-input', '-ref', '-output', '-refGenome']
             values1 = getValuesSYS(listIn, keyList)
@@ -133,8 +131,10 @@ def scriptRunEverything():
 
             hist_file = outLoc + '/initial/allHistBam_100k.npz'
             chr_file = outLoc + '/initial/allChr_100k.npz'
-            if os.path.exists(hist_file) and os.path.exists(chr_file):
-                print("Skipping BAM processing beacuse chr_file and hist_file exist")
+            
+            # check for final BAM processing files
+            if all([os.path.exists(outLoc + '/phasedCounts/chr_' + str(chrNum) + '.npz') for chrNum in range(1, 23)]):
+                print("Skipping BAM processing because phased counts exist for all chromosomes")
             else:
                 runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
             runProcessFull(outLoc, refLoc, refGenome)
