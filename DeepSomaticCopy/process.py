@@ -964,9 +964,13 @@ def modal_quantile_regression(df_regression, lowess_frac=0.2, degree=2, knots=[0
         df_regression['modal_curve'] = df_regression[modal_quantile]
         df_regression['modal_corrected'] = df_regression['reads'] / df_regression[modal_quantile]
 
+        # handle negative or missing values in regions with outlier GC
+        df_regression.modal_corrected = df_regression.modal_corrected.fillna(0)
+        df_regression.loc[df_regression.modal_corrected < 0, 'modal_corrected'] = 1
+
         return df_regression
 
-def findGCadjustment(hist_file, bias_file, goodSubset_file, RDR_file, threads=16):
+def findGCadjustment(hist_file, bias_file, goodSubset_file, RDR_file, threads=24):
     bin_subset = loadnpz(goodSubset_file)
     read_counts = loadnpz(hist_file).T[bin_subset].T
     mappability, gc = loadnpz(bias_file).T
