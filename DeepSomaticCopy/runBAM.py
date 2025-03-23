@@ -1262,7 +1262,7 @@ def findReadCounts(bamLoc, outLoc):
     samfile = pysam.AlignmentFile(bamLoc, "rb")
 
     chrType = 'num'
-    chrName = ''
+    chrName = '1'
     try:
         samfile.fetch(chrName)
     except:
@@ -1329,8 +1329,6 @@ def findReadCounts(bamLoc, outLoc):
 
 def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
 
-
-
     otherSam = False
     if useCB:
         bamLocNew = bamLoc.split('.')
@@ -1338,11 +1336,13 @@ def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
         bamLocNew = '.'.join(bamLocNew)
         bamLocNew = bamLocNew + 'new.' + bamLocNew_end
 
-        fullRenameProcess(bamLoc, bamLocNew, otherSam=otherSam)
+        if os.path.exists(bamLocNew):
+            print('Skipping BAM renaming')
+        else:
+            fullRenameProcess(bamLoc, bamLocNew, otherSam=otherSam)
 
         bamLoc = bamLocNew
 
-    
     numSteps = '9'
     stepName = 0
 
@@ -1352,25 +1352,43 @@ def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
     makeAllDirectories(outLoc)
     print ("Done")
 
-    stepName += 1
-    stepString = str(stepName) + '/' + numSteps
-    print ('Data processing — Step ' + stepString + ': Running bcftools on pseudobulk (may take hours to days)... ', end='')
-    findCombinedCounts(bamLoc, refLoc, outLoc, refGenome)
-    print ("Done")
+
+    chroms =  [str(i) for i in range(1, 22+1)]
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
-    print ('Data processing — Step ' + stepString + ': Running SHAPE-IT... ', end='')
-    runPhasing(outLoc, refGenome, refLoc)
-    print ("Done")
+    if all([os.path.exists(outLoc + '/counts/ignore_chr' + chrNum + '.vcf.gz') for chrNum in chroms]) and all([os.path.exists(outLoc + '/counts/ignore_chr' + chrNum + '.vcf.gz.tbi') for chrNum in chroms]):
+        print ('Data processing — Step ' + stepString + ': Skipping bcftools on pseudobulk', end='')
+    else:
+        print ('Data processing — Step ' + stepString + ': Running bcftools on pseudobulk (may take hours to days)... ', end='')
+        findCombinedCounts(bamLoc, refLoc, outLoc, refGenome)
+        print ("Done")
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
-    print ('Data processing — Step ' + stepString + ': Running bcftools on individual cells... ', end='')
-    findSubsetCounting(outLoc) #This small processing step doesn't require its own step printed in terminal
+    if all([os.path.exists(outLoc + '/phased/phased_chr' + chrNum + '.bcf') for chrNum in chroms]):
+        print ('Data processing — Step ' + stepString + ': Skipping SHAPE-IT', end='')
 
-    findIndividualCounts(bamLoc, refLoc, outLoc, refGenome)
-    print ("Done")
+    else:
+        print ('Data processing — Step ' + stepString + ': Running SHAPE-IT... ', end='')
+        runPhasing(outLoc, refGenome, refLoc)
+        print ("Done")
+
+
+
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    if all([os.path.exists(outLoc + '/phased/restricted_chr' + chrNum + '.vcf.gz') for chrNum in chroms]):
+        print ('Data processing — Step ' + stepString + ': Skipping findSubsetCounting', end='')
+    else:    
+        print ('Data processing — Step ' + stepString + ': Running findSubsetCounting ', end='')
+        findSubsetCounting(outLoc) #This small processing step doesn't require its own step printed in terminal
+
+    if all([os.path.exists(outLoc + '/counts/seperates_chr' + chrNum + '.vcf.gz') for chrNum in chroms]):
+        print ('Data processing — Step ' + stepString + ': Skipping findIndividualCounts', end='')
+    else:
+        findIndividualCounts(bamLoc, refLoc, outLoc, refGenome)
+        print ("Done")
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
@@ -1380,8 +1398,13 @@ def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
-    print ('Data processing — Step ' + stepString + ': Phasing haplotype blocks... ', end='')
-    runAllHaplotypeCounts(outLoc)
+    if (all([os.path.exists(outLoc + '/counts/allcounts_chr' + chrNum + '.npz') for chrNum in chroms]) and
+        all([os.path.exists(outLoc + '/phasedCounts/barcodes_chr' + chrNum + '.npz') for chrNum in chroms]) and 
+        all([os.path.exists(outLoc + '/phasedCounts/positions_chr' + chrNum + '.npz') for chrNum in chroms])):
+        print ('Data processing — Step ' + stepString + ': Skipping runAllHaplotypeCounts', end='')
+    else:
+        print ('Data processing — Step ' + stepString + ': Phasing haplotype blocks... ', end='')
+        runAllHaplotypeCounts(outLoc)
 
     runAllGroupedEvidenceSVD(outLoc)
     print ('Done')

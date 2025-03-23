@@ -1,4 +1,5 @@
 import sys
+import os
 import numpy as np
 
 from .process import runProcessFull
@@ -123,14 +124,19 @@ def scriptRunEverything():
         stepVal = getValuesSYS(listIn, ['-step'])
         stepVal = stepVal[0]
 
-        
-
         if stepVal == 'processing':
             keyList = ['-input', '-ref', '-output', '-refGenome']
             values1 = getValuesSYS(listIn, keyList)
             bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
 
-            runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
+            hist_file = outLoc + '/initial/allHistBam_100k.npz'
+            chr_file = outLoc + '/initial/allChr_100k.npz'
+            
+            # check for final BAM processing files
+            if all([os.path.exists(outLoc + '/phasedCounts/chr_' + str(chrNum) + '.npz') for chrNum in range(1, 23)]):
+                print("Skipping BAM processing because phased counts exist for all chromosomes")
+            else:
+                runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
             runProcessFull(outLoc, refLoc, refGenome)
             scalorRunBins(outLoc)
         
