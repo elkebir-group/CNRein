@@ -8,7 +8,11 @@ CNRein (formerly known as DeepCopy) is a deep reinforcement learning based evolu
   <img width="1000" height="220" src="./overview.png">
 </p>
 
-## Instalation
+## Contact
+
+Please contact Stefan Ivanovic at stefan4@illinois.edu with any issues running the software or any requests for additional features in CNRein. 
+
+## Installation
 
 ### Manual
 
