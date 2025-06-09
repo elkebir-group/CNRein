@@ -1083,7 +1083,7 @@ def findReadCounts(bamLoc, outLoc):
     samfile = pysam.AlignmentFile(bamLoc, "rb")
 
     chrType = 'num'
-    chrName = ''
+    chrName = '1'
     try:
         samfile.fetch(chrName)
     except:
