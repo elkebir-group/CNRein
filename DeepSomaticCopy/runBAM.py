@@ -478,10 +478,12 @@ def runPhasing(outLoc, refGenome, refLoc):
         countsFile = outLoc + '/counts/ignore_chr' + chrNum + '.vcf.gz'
         if refGenome == 'hg38':
             renameRef = refLoc + '/vcf_hg38/chr' + chrNum + '.vcf.gz'
+            #chrName = chrNum #This option works for some datasets
             chrName = 'chr' + chrNum
         else:
             renameRef = refLoc + '/vcf_hg19/chr' + chrNum + '.vcf.gz'
-            chrName = 'chr' + chrNum
+            #chrName = 'chr' + chrNum #This option works for some datasets
+            chrName = chrNum
 
         command6_input = shapeItLocation + ' --input ' + countsFile + ' --reference ' + renameRef + ' --region ' + chrName
         command6_output = ' --output ' + phasedFile + ' --thread 8'
