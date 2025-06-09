@@ -1,4 +1,5 @@
 import sys
+import os
 import numpy as np
 
 from .process import runProcessFull
@@ -15,7 +16,6 @@ def getValuesSYS(listIn, keyList):
 
     valueList = []
     for key1 in keyList:
-        print(key1)
         arg1 = np.argwhere(listIn == key1)[0, 0]
         value1 = listIn[arg1+1]
         valueList.append(value1)
@@ -48,7 +48,6 @@ def runEverything(bamLoc, refLoc, outLoc, refGenome, doCB=False, maxPloidy=10):
     scalorRunAll(outLoc, maxPloidy=maxPloidy)
     easyRunRL(outLoc)
     saveReformatCSV(outLoc, isNaive=False)
-    findTreeFromFile(outLoc)
 
 def scriptRunEverything():
     import sys
