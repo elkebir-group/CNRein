@@ -51,15 +51,15 @@ python script.py -input <BAM file location> \
     -output <location to store results> \
     -refGenome <either "hg19" or "hg38">
 ```
-An example usage could be as below
+An example usage could be as follows
 ```bash
 python script.py -input ./data/TN3_FullMerge.bam -ref ./data/refNew -output ./data/newTN3 -refGenome hg38
 ```
-Additionally, "-CB" can be included if cells are indicated by cell barcode rather than read group. 
+Additionally, "-CB" can be included if cells are indicated by cell barcode rather than read group, and "-seperateBAMs" can be included if each cell has its own BAM file. 
 
 ### With pip installation
 
-CNRein can be ran with the following command:
+CNRein can be run with the following command:
 ```bash
 CNRein -input <BAM file location> \
     -ref <reference folder location> \
@@ -73,7 +73,7 @@ CNRein -input ./data/TN3_FullMerge.bam \
     -output ./data/newTN3 \
     -refGenome hg38
 ```
-Optional parameters include "-CB" if cells are indicated by cell barcode rather than read group, and "-maxPloidy {some value}" to set a maximum ploidy value for predictions. 
+Optional parameters include "-CB" if cells are indicated by cell barcode rather than read group, "-seperateBAMs" if each cell has its own BAM file, and "-maxPloidy {some value}" to set a maximum ploidy value for predictions. 
 
 Additionally, one can run only parts of the CNRein pipeline with the following command:
 ```bash
