@@ -346,7 +346,7 @@ def addReadGroup(splitFolder, otherSam=False):
 
 
 
-def fullRenameProcess(inFile, outFile, otherSam=False):
+def fullRenameProcess(inFile, outFile, useCB, otherSam=False):
 
     #otherSam = True
     #print (inFile)
@@ -358,15 +358,14 @@ def fullRenameProcess(inFile, outFile, otherSam=False):
 
     #print (folder0)
 
-
     folder1 = folder0 + '/temp_rename'
     os.system('mkdir ' + folder1) 
 
     folder2 = folder0 + '/temp_rename/split/'
     os.system('mkdir ' + folder2) 
 
-    
-    if True:
+    if useCB == 'CB':
+
         input_bam = inFile 
         output_prefix = folder2
         N = 1000
@@ -380,7 +379,8 @@ def fullRenameProcess(inFile, outFile, otherSam=False):
 
                 command1 = 'samtools index ' + folder2 + fnames[a]
                 os.system(command1)
-
+    else:
+        folder2 = folder0 #It's already split! 
 
     addReadGroup(folder2, otherSam=otherSam)
 
@@ -575,20 +575,28 @@ def runPhasing(outLoc, refGenome, refLoc):
         if refGenome == 'hg38':
             renameRef = refLoc + '/vcf_hg38/chr' + chrNum + '.vcf.gz'
             chrName = 'chr' + chrNum
+            #chrName = '' + chrNum # For some users this works instead
         else:
             renameRef = refLoc + '/vcf_hg19/chr' + chrNum + '.vcf.gz'
-            chrName = chrNum
+            chrName = '' + chrNum
+            #chrName = 'chr' + chrNum # For some users this works instead
 
-        command6_input = shapeItLocation + ' --input ' + countsFile + ' --reference ' + renameRef +  ' --region ' + chrName 
+        command6_input = shapeItLocation + ' --input ' + countsFile + ' --reference ' + renameRef + ' --region ' + chrName
         command6_output = ' --output ' + phasedFile + ' --thread 8'
-        
+
         command6 = command6_input + command6_output
-        #systemPrint(command6)
+        command6 = shapeItLocation + ' --input ' + countsFile + ' \
+         --reference ' + renameRef + ' \
+         --region ' + chrName + ' \
+         --output ' + phasedFile + ' \
+         --thread 8'
+        
+        # systemPrint(command6)
         commandList1.append(command6)
 
-        command7 = 'bcftools index -t ' + str(phasedFile) 
+        command7 = 'bcftools index ' + str(phasedFile)
 
-        #systemPrint(command7)
+        # systemPrint(command7)
         commandList2.append(command7)
 
     
@@ -1262,7 +1270,7 @@ def findReadCounts(bamLoc, outLoc):
     samfile = pysam.AlignmentFile(bamLoc, "rb")
 
     chrType = 'num'
-    chrName = '1'
+    chrName = ''
     try:
         samfile.fetch(chrName)
     except:
@@ -1327,22 +1335,24 @@ def findReadCounts(bamLoc, outLoc):
 
 
 
-def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
+def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=''):
+
+
 
     otherSam = False
-    if useCB:
+    if useCB in ['CB', 'seperateBAMs']:
         bamLocNew = bamLoc.split('.')
         bamLocNew_end = bamLocNew[-1]
         bamLocNew = '.'.join(bamLocNew)
         bamLocNew = bamLocNew + 'new.' + bamLocNew_end
 
-        if os.path.exists(bamLocNew):
-            print('Skipping BAM renaming')
-        else:
-            fullRenameProcess(bamLoc, bamLocNew, otherSam=otherSam)
+        fullRenameProcess(bamLoc, bamLocNew, useCB, otherSam=otherSam)
 
         bamLoc = bamLocNew
 
+    
+
+    
     numSteps = '9'
     stepName = 0
 
@@ -1352,43 +1362,25 @@ def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
     makeAllDirectories(outLoc)
     print ("Done")
 
-
-    chroms =  [str(i) for i in range(1, 22+1)]
+    stepName += 1
+    stepString = str(stepName) + '/' + numSteps
+    print ('Data processing — Step ' + stepString + ': Running bcftools on pseudobulk (may take hours to days)... ', end='')
+    findCombinedCounts(bamLoc, refLoc, outLoc, refGenome)
+    print ("Done")
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
-    if all([os.path.exists(outLoc + '/counts/ignore_chr' + chrNum + '.vcf.gz') for chrNum in chroms]) and all([os.path.exists(outLoc + '/counts/ignore_chr' + chrNum + '.vcf.gz.tbi') for chrNum in chroms]):
-        print ('Data processing — Step ' + stepString + ': Skipping bcftools on pseudobulk', end='')
-    else:
-        print ('Data processing — Step ' + stepString + ': Running bcftools on pseudobulk (may take hours to days)... ', end='')
-        findCombinedCounts(bamLoc, refLoc, outLoc, refGenome)
-        print ("Done")
+    print ('Data processing — Step ' + stepString + ': Running SHAPE-IT... ', end='')
+    runPhasing(outLoc, refGenome, refLoc)
+    print ("Done")
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
-    if all([os.path.exists(outLoc + '/phased/phased_chr' + chrNum + '.bcf') for chrNum in chroms]):
-        print ('Data processing — Step ' + stepString + ': Skipping SHAPE-IT', end='')
+    print ('Data processing — Step ' + stepString + ': Running bcftools on individual cells... ', end='')
+    findSubsetCounting(outLoc) #This small processing step doesn't require its own step printed in terminal
 
-    else:
-        print ('Data processing — Step ' + stepString + ': Running SHAPE-IT... ', end='')
-        runPhasing(outLoc, refGenome, refLoc)
-        print ("Done")
-
-
-
-    stepName += 1
-    stepString = str(stepName) + '/' + numSteps
-    if all([os.path.exists(outLoc + '/phased/restricted_chr' + chrNum + '.vcf.gz') for chrNum in chroms]):
-        print ('Data processing — Step ' + stepString + ': Skipping findSubsetCounting', end='')
-    else:    
-        print ('Data processing — Step ' + stepString + ': Running findSubsetCounting ', end='')
-        findSubsetCounting(outLoc) #This small processing step doesn't require its own step printed in terminal
-
-    if all([os.path.exists(outLoc + '/counts/seperates_chr' + chrNum + '.vcf.gz') for chrNum in chroms]):
-        print ('Data processing — Step ' + stepString + ': Skipping findIndividualCounts', end='')
-    else:
-        findIndividualCounts(bamLoc, refLoc, outLoc, refGenome)
-        print ("Done")
+    findIndividualCounts(bamLoc, refLoc, outLoc, refGenome)
+    print ("Done")
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
@@ -1398,22 +1390,8 @@ def runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=False):
 
     stepName += 1
     stepString = str(stepName) + '/' + numSteps
-    if (all([os.path.exists(outLoc + '/counts/allcounts_chr' + chrNum + '.npz') for chrNum in chroms]) and
-        all([os.path.exists(outLoc + '/phasedCounts/barcodes_chr' + chrNum + '.npz') for chrNum in chroms]) and 
-        all([os.path.exists(outLoc + '/phasedCounts/positions_chr' + chrNum + '.npz') for chrNum in chroms])):
-        print ('Data processing — Step ' + stepString + ': Skipping runAllHaplotypeCounts', end='')
-    else:
-        print ('Data processing — Step ' + stepString + ': Phasing haplotype blocks... ', end='')
-        runAllHaplotypeCounts(outLoc)
+    print ('Data processing — Step ' + stepString + ': Phasing haplotype blocks... ', end='')
+    runAllHaplotypeCounts(outLoc)
 
     runAllGroupedEvidenceSVD(outLoc)
     print ('Done')
-
-
-
-
-
-
-
-
-

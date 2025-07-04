@@ -57,11 +57,15 @@ def scriptRunEverything():
 
 
 
-    doCB = False
+    doCB = ''
     if '-CB' in listIn:
-        doCB = True
-        useCB = True
+        #doCB = True
+        doCB = 'CB'
 
+    if '-seperateBAMs' in listIn:
+        doCB = 'seperateBAMs'
+    
+    
 
     #keyList = [ 'python', 'python3', '-output', '-hap1', '-hap2', '-chr', ]
     #checkInvalidArg(listIn, ['maxPloidy', 'maxPliody'], ['-maxPloidy'])
@@ -72,13 +76,13 @@ def scriptRunEverything():
         print ("Usage instructions:")
         print ('')
         print ('Help information :')
-        print ('"DeepCopyRun -h" or "DeepCopyRun -help" or "DeepCopyRun --help" ')
+        print ('"CNRein -h" or "CNRein -help" or "CNRein --help" ')
         print ('')
         print ('Running pipeline:')
-        print ('DeepCopyRun -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38"> ' )
+        print ('CNRein -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38"> ' )
         print ('')
         print ('Running part of pipeline: ')
-        print ('DeepCopyRun -step <name of step to be ran> -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38"> ' )
+        print ('CNRein -step <name of step to be ran> -input <BAM file location> -ref <reference folder location> -output <location to store results> -refGenome <either "hg19" or "hg38"> ' )
 
     elif '-tree' in listIn:
 
@@ -124,23 +128,18 @@ def scriptRunEverything():
         stepVal = getValuesSYS(listIn, ['-step'])
         stepVal = stepVal[0]
 
+        
+
         if stepVal == 'processing':
             keyList = ['-input', '-ref', '-output', '-refGenome']
             values1 = getValuesSYS(listIn, keyList)
             bamLoc, refLoc, outLoc, refGenome = values1[0], values1[1], values1[2], values1[3]
 
-            hist_file = outLoc + '/initial/allHistBam_100k.npz'
-            chr_file = outLoc + '/initial/allChr_100k.npz'
-            
-            # check for final BAM processing files
-            if all([os.path.exists(outLoc + '/phasedCounts/chr_' + str(chrNum) + '.npz') for chrNum in range(1, 23)]):
-                print("Skipping BAM processing because phased counts exist for all chromosomes")
-            else:
-                runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
+            runAllSteps(bamLoc, refLoc, outLoc, refGenome, useCB=doCB)
             runProcessFull(outLoc, refLoc, refGenome)
             scalorRunBins(outLoc)
         
-        if stepVal == 'NaiveCopy':
+        if stepVal in ['NaiveCopy', 'CNNaive']:
             values1 = getValuesSYS(listIn, ['-output'])
             outLoc = values1[0]
 
@@ -149,7 +148,7 @@ def scriptRunEverything():
 
             runNaiveCopy(outLoc, maxPloidy=maxPloidy)
 
-        if stepVal == 'DeepCopy':
+        if stepVal in ['DeepCopy', 'CNRein']:
             values1 = getValuesSYS(listIn, ['-output'])
             outLoc = values1[0]
             easyRunRL(outLoc)
