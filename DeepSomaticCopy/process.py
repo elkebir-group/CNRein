@@ -980,6 +980,10 @@ def findGCadjustment(hist_file, bias_file, goodSubset_file, RDR_file, threads=24
         all_results = p.map(modal_quantile_regression_wrapper, all_params)
    
     array = np.vstack([d.modal_corrected.values for d in all_results])
+
+    mean1 = np.mean(array, axis=1)
+    array = array / (mean1.reshape((-1, 1)) + 1e-10)
+    
     np.savez_compressed(RDR_file, array)
 
 
@@ -1003,6 +1007,7 @@ RDR_file = './data/' + folder1 + '/initial/RDR_100k.npz'
 chr_file2 = './data/' + folder1 + '/initial/chr_100k.npz'
 hapHist_file = './data/' + folder1 + '/initial/HAP_100k.npz'
 totalRead_file = './data/' + folder1 + '/initial/totalReads.npz'
+
 
 #useHG38 = True
 #if folder1 == 'DLP':
